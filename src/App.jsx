@@ -1,7 +1,8 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import {
   ArrowLeft,
   ArrowUpRight,
+  BadgeCheck,
   CalendarDays,
   Check,
   ChevronDown,
@@ -9,6 +10,7 @@ import {
   Clock3,
   Compass,
   Flame,
+  Frown,
   Heart,
   MapPin,
   MessageCircle,
@@ -16,6 +18,7 @@ import {
   Moon,
   Navigation,
   Pause,
+  PartyPopper,
   Plus,
   RefreshCw,
   Settings2,
@@ -23,6 +26,7 @@ import {
   ShieldCheck,
   Sparkles,
   Star,
+  Snowflake,
   Sun,
   Users,
   X,
@@ -31,7 +35,7 @@ import {
 import './App.css'
 
 const routes = [
-  { name: 'The little loop', area: 'Syntagma · Plaka', distance: '2.4 km', steps: '3,200', time: '32 min', stop: 'Mokka Coffee', color: 'lime' },
+  { name: 'The little loop', area: 'Syntagma · Plaka', distance: '2.4 km', steps: '3,200', time: '32 min', stop: 'Grigoris Syntagma', color: 'lime', luckyOffer: { meters: 50, prize: 'Free fresh-squeezed juice', code: 'GRIGORIS-50', chance: 'Sponsor-set odds' } },
   { name: 'A garden detour', area: 'Kolonaki · National Garden', distance: '3.8 km', steps: '5,100', time: '48 min', stop: 'Line Athens', color: 'pink' },
   { name: 'Sea-level reset', area: 'Koukaki · Thissio', distance: '5.2 km', steps: '7,000', time: '65 min', stop: 'Ohh Boy', color: 'blue' },
 ]
@@ -41,6 +45,36 @@ const people = [
   { name: 'Alex', age: 29, detail: 'Architect · Pangrati', bio: 'I know a shortcut, but let’s not take it.', image: 'photo-1500648767791-00dcc994a43e', interests: ['Architecture', 'Coffee', 'Hikes'] },
   { name: 'Maya', age: 26, detail: 'Researcher · Exarchia', bio: 'Collecting bookstores and steps.', image: 'photo-1531123897727-8f129e1688ce', interests: ['Books', 'Cats', 'Live music'] },
 ]
+
+const discoverCandidates = [
+  { ...people[0], distanceKm: 1.2 },
+  { ...people[1], distanceKm: 3.1 },
+  { ...people[2], distanceKm: 4.7 },
+  { name: 'Petra', age: 28, detail: 'Photographer · Koukaki', bio: 'Looking for good light, good coffee, and the long route.', image: 'photo-1529139574466-a303027c1d8b', interests: ['Photography', 'Coffee', 'Museums'], distanceKm: 2.6 },
+  { name: 'Jonas', age: 33, detail: 'Product designer · Pangrati', bio: 'Happy to walk first and decide where we’re going later.', image: 'photo-1535713875002-d1d0cf377fde', interests: ['Design', 'Cooking', 'Cycling'], distanceKm: 4.3 },
+  { name: 'Lara', age: 25, detail: 'Bookshop assistant · Mets', bio: 'Can recommend a book for every kind of weather.', image: 'photo-1494790108377-be9c29b29330', interests: ['Books', 'Cats', 'Pastries'], distanceKm: 1.8 },
+  { name: 'Iris', age: 30, detail: 'Florist · Neos Kosmos', bio: 'Taking the scenic route to a good bakery.', image: 'photo-1524504388940-b1c1722653e1', interests: ['Gardens', 'Baking', 'Films'], distanceKm: 5.8 },
+  { name: 'Sofia', age: 39, detail: 'Physiotherapist · Mets', bio: 'Early walks, strong coffee, no rush.', image: 'photo-1544005313-94ddf0286df2', interests: ['Wellness', 'Sea swims', 'Cooking'], distanceKm: 4.2 },
+  { name: 'Eva', age: 22, detail: 'Student · Exarchia', bio: 'Always up for a walk that ends by the sea.', image: 'photo-1508214751196-bcfd4ca60f91', interests: ['Swimming', 'Music', 'Plants'], distanceKm: 3.6 },
+  { name: 'Leon', age: 23, detail: 'Graduate student · Thissio', bio: 'Finding my favorite corners of Athens one walk at a time.', image: 'photo-1506794778202-cad84cf45f1d', interests: ['History', 'Running', 'Coffee'], distanceKm: 4.4 },
+]
+const MAX_DISCOVER_DISTANCE_KM = 5
+
+function calculateAge(birthDate) {
+  const birth = new Date(`${birthDate}T00:00:00`)
+  if (Number.isNaN(birth.getTime())) return -1
+  const today = new Date()
+  let age = today.getFullYear() - birth.getFullYear()
+  if (today.getMonth() < birth.getMonth() || (today.getMonth() === birth.getMonth() && today.getDate() < birth.getDate())) age -= 1
+  return age
+}
+
+function ageGroupFor(age) {
+  if (age < 18) return null
+  if (age <= 24) return '18-24'
+  const lower = Math.floor(age / 10) * 10
+  return `${lower}-${lower + 9}`
+}
 
 const conversations = [
   { name: 'Nina', image: people[0].image, preview: 'That little coffee stop sounds perfect ☀', time: '10:42', unread: true, messages: [{ author: 'them', text: 'Hi Elena! I found a lovely little loop near Plaka.', time: '10:31' }, { author: 'me', text: 'That sounds lovely. I could use a coffee stop too.', time: '10:36' }, { author: 'them', text: 'That little coffee stop sounds perfect ☀', time: '10:42' }] },
@@ -53,19 +87,35 @@ const promotions = [
   { brand: 'Line Athens', offer: '15% off your first pour', note: 'A little treat for your next walk', image: 'photo-1514933651103-005eec06c04b', category: 'WINE BAR · PSYRRI', color: 'line' },
 ]
 
+const extraRewards = [
+  { brand: 'Grigoris', offer: 'Fresh-squeezed juice on us', note: 'Free drink at the Syntagma stop', image: 'photo-1600271886742-f049cd451bba', milestone: 10, category: '10-DAY STREAK' },
+  { brand: 'Ohh Boy', offer: 'Coffee and a little pastry', note: 'A sweet break in Koukaki', image: 'photo-1445116572660-236099ec97a0', milestone: 30, category: '30-DAY STREAK' },
+  { brand: 'Line Athens', offer: '15% off your next visit', note: 'An evening treat in Psyrri', image: 'photo-1514933651103-005eec06c04b', milestone: 30, category: '30-DAY STREAK' },
+  { brand: 'Nolan', offer: 'A set lunch for two', note: 'Celebrate your walking ritual', image: 'photo-1559339352-11d035aa65de', milestone: 50, category: '50-DAY STREAK' },
+]
+
 const navItems = [
-  { id: 'home', label: 'Today', icon: Compass },
-  { id: 'routes', label: 'Routes', icon: Navigation },
   { id: 'people', label: 'Discover', icon: Users },
+  { id: 'routes', label: 'Routes', icon: Navigation },
+  { id: 'home', label: 'Home', icon: Compass },
   { id: 'messages', label: 'Messages', icon: MessageCircle, badge: '2' },
   { id: 'rewards', label: 'Rewards', icon: Star },
 ]
 const currentYear = new Date().getFullYear()
+const STREAK_TRIP_INTERVAL_MS = 24 * 60 * 60 * 1000
 
-function RouteMap({ compact = false }) {
+function readSavedTheme() {
+  try {
+    return window.localStorage.getItem('kinesi-theme') === 'night'
+  } catch {
+    return false
+  }
+}
+
+function RouteMap({ compact = false, shopName = 'Local partner stop', circular = false, showPartnerStop = false }) {
   return (
-    <div className={`route-map ${compact ? 'route-map-compact' : ''}`}>
-      <svg viewBox="0 0 760 380" role="img" aria-label="Walking route through central Athens, past Mokka Coffee">
+    <div className={`route-map ${compact ? 'route-map-compact' : ''} ${circular ? 'route-map-circular' : 'route-map-one-way'}`}>
+      <svg viewBox="0 0 760 380" role="img" aria-label={`${circular ? 'Circular' : 'One-way'} walking route through central Athens${showPartnerStop ? ` with an offer stop at ${shopName}` : ''}`}>
         <rect width="760" height="380" fill="#e9eee5" />
         <path className="park" d="M500 0h260v104l-66 37-54-12-47 34-48-14-36-63z" />
         <path className="water" d="M0 315c85-24 125-14 189 3s95 12 156-5" />
@@ -78,15 +128,16 @@ function RouteMap({ compact = false }) {
         </g>
         <path className="route-shadow" d="M158 270c46-9 68-53 118-52 42 1 36 42 83 38 44-4 38-79 84-88 43-8 57 33 91 19 29-11 42-49 73-59" />
         <path className="route-line" d="M158 270c46-9 68-53 118-52 42 1 36 42 83 38 44-4 38-79 84-88 43-8 57 33 91 19 29-11 42-49 73-59" />
+        {circular && <path className="route-return-line" d="M621 98c-30 30-42 68-84 74-43 7-58 58-104 70-42 11-68-10-109 3-44 14-83 30-166 25" />}
       </svg>
       {!compact && <>
+        <span className={`map-route-mode ${circular ? 'is-circular' : 'is-one-way'}`}>{circular ? <RefreshCw size={12} /> : <ArrowUpRight size={12} />} {circular ? 'CIRCULAR ROUTE' : 'ONE-WAY ROUTE'}</span>
         <span className="map-label map-label-1">SYNTAGMA</span>
         <span className="map-label map-label-2">PLAKA</span>
         <span className="map-label map-label-3">NATIONAL GARDEN</span>
         <span className="map-label map-label-4">MONASTIRAKI</span>
         <span className="map-pin map-pin-start"><Navigation size={15} fill="currentColor" /></span>
-        <span className="map-pin map-pin-shop"><MapPin size={16} fill="currentColor" /></span>
-        <span className="map-stop-label"><span className="stop-dot" /> Mokka Coffee</span>
+        {showPartnerStop && <><span className="map-pin map-pin-shop"><MapPin size={16} fill="currentColor" /></span><span className="map-stop-label"><span className="stop-dot" /> {shopName}</span></>}
         <span className="map-caption"><Sun size={14} /> 23° and lovely out</span>
         <button className="map-control" type="button" title="Map settings"><Plus size={16} /><span /><Minus size={16} /></button>
       </>}
@@ -109,10 +160,13 @@ function GoalPicker({ onChoose }) {
 
 function App() {
   const [activeTab, setActiveTab] = useState('home')
-  const [selectedRoute, setSelectedRoute] = useState(0)
+  const [targetSteps, setTargetSteps] = useState(3200)
+  const [returnEnabled, setReturnEnabled] = useState(true)
   const [goal, setGoalValue] = useState(10)
   const [steps, setSteps] = useState(3850)
+  const [goalSteps, setGoalSteps] = useState(19200)
   const [streak, setStreak] = useState(6)
+  const [lastStreakTripAt, setLastStreakTripAt] = useState(null)
   const [lifetimeSteps, setLifetimeSteps] = useState(24800)
   const [freezePasses, setFreezePasses] = useState({
     'Illness or injury': 3,
@@ -120,13 +174,21 @@ function App() {
     'I don’t have time': 3,
   })
   const [walkStarted, setWalkStarted] = useState(false)
+  const [routeProgressSteps, setRouteProgressSteps] = useState(0)
+  const [streakFrozen, setStreakFrozen] = useState(false)
+  const [luckyRedeemed, setLuckyRedeemed] = useState(false)
   const [alarm, setAlarm] = useState(false)
-  const [nightMode, setNightMode] = useState(false)
+  const [nightMode, setNightMode] = useState(readSavedTheme)
   const [modal, setModal] = useState('')
   const [freezeReason, setFreezeReason] = useState('')
   const [freezeMessage, setFreezeMessage] = useState('')
   const [toast, setToast] = useState('')
   const [profileSaved, setProfileSaved] = useState(false)
+  const [profileVerified, setProfileVerified] = useState(false)
+  const [ageAccess, setAgeAccess] = useState('locked')
+  const [birthDate, setBirthDate] = useState('')
+  const [ageDocumentName, setAgeDocumentName] = useState('')
+  const [ageVerificationMessage, setAgeVerificationMessage] = useState('')
   const [scheduleSent, setScheduleSent] = useState(false)
   const [chatItems, setChatItems] = useState(conversations)
   const [incomingLikes, setIncomingLikes] = useState(people)
@@ -135,16 +197,37 @@ function App() {
   const [draftMessage, setDraftMessage] = useState('')
   const [personIndex, setPersonIndex] = useState(0)
   const swipeStartX = useRef(null)
+  const selectedRoute = routes.reduce((closestIndex, route, index) => {
+    const routeSteps = Number(route.steps.replace(',', ''))
+    const closestSteps = Number(routes[closestIndex].steps.replace(',', ''))
+    return Math.abs(routeSteps - targetSteps) < Math.abs(closestSteps - targetSteps) ? index : closestIndex
+  }, 0)
   const currentRoute = routes[selectedRoute]
-  const currentPerson = people[personIndex]
+  const outboundSteps = returnEnabled ? Math.ceil(targetSteps / 2) : targetSteps
+  const returnSteps = returnEnabled ? targetSteps - outboundSteps : 0
+  const plannedDistanceKm = (targetSteps / 1300).toFixed(1)
+  const plannedMinutes = Math.max(15, Math.round(targetSteps / 100))
+  const viewerAge = birthDate ? calculateAge(birthDate) : 28
+  const viewerAgeGroup = ageGroupFor(viewerAge)
+  const discoverPeople = discoverCandidates.filter((person) => person.distanceKm <= MAX_DISCOVER_DISTANCE_KM && ageGroupFor(person.age) === viewerAgeGroup)
+  const currentPerson = discoverPeople[personIndex]
   const currentChat = chatItems.find((chat) => chat.name === activeChat)
   const rewardSteps = goal === 10 ? 15000 : goal === 30 ? 55000 : 95000
   const progress = Math.min(100, Math.round((streak / goal) * 100))
+  const socialLocked = ['people', 'likes', 'messages'].includes(activeTab) && ageAccess !== 'verified'
 
   function showToast(message) {
     setToast(message)
     window.setTimeout(() => setToast(''), 2600)
   }
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem('kinesi-theme', nightMode ? 'night' : 'day')
+    } catch {
+      // Theme still works for this session when storage is unavailable.
+    }
+  }, [nightMode])
 
   function setGoal(nextGoal) {
     if (streak > 0) {
@@ -155,35 +238,67 @@ function App() {
   }
 
   function completeWalk() {
-    const newStreak = streak + 1
-    const routeSteps = Number(currentRoute.steps.replace(',', ''))
+    const routeSteps = targetSteps
+    const now = Date.now()
     setWalkStarted(false)
+    setRouteProgressSteps(0)
+    if (!streakFrozen && lastStreakTripAt !== null && now - lastStreakTripAt < STREAK_TRIP_INTERVAL_MS) {
+      setLifetimeSteps((value) => value + routeSteps)
+      setSteps((value) => value + routeSteps)
+      setGoalSteps((value) => value + routeSteps)
+      setModal('route-complete')
+      return
+    }
+
+    setStreakFrozen(false)
+    const newStreak = streak + 1
+    setLastStreakTripAt(now)
     if (newStreak >= goal) {
       setLifetimeSteps((value) => value + routeSteps + rewardSteps)
       setSteps(0)
+      setGoalSteps(0)
       setStreak(0)
       setModal('reward')
     } else {
       setLifetimeSteps((value) => value + routeSteps)
       setSteps((value) => value + Number(currentRoute.steps.replace(',', '')))
+      setGoalSteps((value) => value + routeSteps)
       setStreak(newStreak)
-      showToast(`Lovely work. Day ${newStreak} is in the books.`)
+      setModal('route-complete')
     }
   }
 
   function handleWalkButton() {
-    if (walkStarted) {
-      completeWalk()
-    } else {
+    if (!walkStarted) {
+      setRouteProgressSteps(0)
       setWalkStarted(true)
-      showToast('Your route is ready. Enjoy the walk.')
+      setLuckyRedeemed(false)
+      showToast(currentRoute.luckyOffer ? 'Lucky route started. A partner offer is ahead.' : 'Your route is ready. Enjoy the walk.')
+      return
     }
+    if (routeProgressSteps >= targetSteps) completeWalk()
+    else setModal('stop-route')
+  }
+
+  function logRouteProgress() {
+    const updatedProgress = Math.min(targetSteps, routeProgressSteps + 500)
+    setRouteProgressSteps(updatedProgress)
+    if (updatedProgress >= targetSteps) showToast('Destination reached. Finish your route to count it.')
+  }
+
+  function confirmStopRoute() {
+    setWalkStarted(false)
+    setRouteProgressSteps(0)
+    setLuckyRedeemed(false)
+    setModal('')
+    showToast('Route stopped. No route steps or streak day were counted.')
   }
 
   function chooseNextGoal(nextGoal) {
     setGoal(nextGoal)
     setStreak(0)
     setSteps(0)
+    setGoalSteps(0)
     setModal('')
     showToast(`Your ${nextGoal}-day goal is ready. Start fresh.`)
   }
@@ -203,6 +318,7 @@ function App() {
       return
     }
     setFreezePasses((passes) => ({ ...passes, [freezeReason]: passes[freezeReason] - 1 }))
+    setStreakFrozen(true)
     setFreezeMessage(`${remainingPasses - 1} of 3 passes remain for this reason this month.`)
     setTimeout(() => {
       setModal('')
@@ -255,15 +371,42 @@ function App() {
     setDraftMessage('')
   }
 
+  function completePhotoVerification() {
+    setProfileVerified(true)
+    setModal('')
+    showToast('Profile photo verified in this demo.')
+  }
+
+  function verifyAge(event) {
+    event.preventDefault()
+    if (!birthDate || !ageDocumentName) {
+      setAgeVerificationMessage('Enter your date of birth and attach an official document.')
+      return
+    }
+    const age = calculateAge(birthDate)
+    if (age < 0) {
+      setAgeVerificationMessage('Enter a valid date of birth.')
+      return
+    }
+    if (age < 18) {
+      setAgeAccess('underage')
+      setAgeVerificationMessage('Discover, likes, matches, and chats are unavailable to users under 18.')
+      return
+    }
+    setAgeAccess('verified')
+    setAgeVerificationMessage('')
+    showToast('Age verification approved in this demo.')
+  }
+
   function choosePerson(direction) {
-    const person = people[personIndex]
+    const person = discoverPeople[personIndex]
     if (!person) return
     if (direction === 'right') {
       likePerson(person)
     } else {
       showToast(`You passed on ${person.name}.`)
     }
-    setPersonIndex((index) => Math.min(index + 1, people.length))
+    setPersonIndex((index) => Math.min(index + 1, discoverPeople.length))
   }
 
   function startCardSwipe(event) {
@@ -303,17 +446,30 @@ function App() {
 
       <main className="main-content">
         <header className="topbar">
-          <button type="button" className="streak-header-control" onClick={() => setModal('streak')} aria-label={`${streak}-day streak, ${goal}-day goal. Open streak options`} title="Streak details"><Flame size={18} fill="currentColor" /><strong>{streak}</strong></button>
-          <div className="topbar-actions"><span className="weather-pill"><Sun size={15} /> 23° <i>Sunny in Athens</i></span><button type="button" className="icon-button theme-toggle" aria-label={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} title={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} onClick={() => setNightMode((value) => !value)}>{nightMode ? <Sun size={18} /> : <Moon size={18} />}</button><button type="button" className="icon-button messages-shortcut" aria-label="Messages and matches, 2 unread" title="Messages and matches" onClick={() => chooseTab('messages')}><MessageCircle size={18} /><span className="message-count">2</span></button></div>
+          <button type="button" className={`streak-header-control ${streakFrozen ? 'frozen' : ''}`} onClick={() => setModal('streak')} aria-label={`${streak}-day streak, ${goalSteps.toLocaleString()} goal steps, ${goal}-day goal. Open streak options`} title="Streak details">{streakFrozen ? <Snowflake size={18} /> : <Flame size={18} fill="currentColor" />}<strong>{streak}</strong><span className="header-goal-steps"><Zap size={13} /><strong>{goalSteps.toLocaleString()}</strong></span></button>
+          <div className="topbar-actions"><span className="weather-pill"><Sun size={15} /> 23° <i>Sunny in Athens</i></span><button type="button" className="icon-button messages-shortcut" aria-label="Messages and matches, 2 unread" title="Messages and matches" onClick={() => chooseTab('messages')}><MessageCircle size={18} /><span className="message-count">2</span></button></div>
         </header>
+
+        {socialLocked && <section className="subpage age-gate-page"><div className="age-gate-panel"><div className="age-gate-icon"><ShieldCheck size={24} /></div><p className="eyebrow">A SAFER COMMUNITY</p><h1>Verify your age to <em>meet walkers.</em></h1><p className="age-gate-intro">Discover, likes, matches, and chats are for adults 18 and over. Attach an official document to verify your age and unlock these features.</p>{ageAccess === 'underage' ? <div className="age-denied"><ShieldCheck size={19} /><span><strong>Social features are unavailable.</strong><small>{ageVerificationMessage}</small></span></div> : <form className="age-verification-form" onSubmit={verifyAge}><label>Date of birth<input type="date" value={birthDate} onChange={(event) => { setBirthDate(event.target.value); setAgeVerificationMessage('') }} required /></label><label>Official age document <span className="optional-label">(government ID, passport, or other proof of age)</span><input type="file" accept="image/*,.pdf,application/pdf" onChange={(event) => { setAgeDocumentName(event.target.files?.[0]?.name || ''); setAgeVerificationMessage('') }} required /></label>{ageDocumentName && <span className="age-file-ready"><Check size={14} /> {ageDocumentName}</span>}{ageVerificationMessage && <p className="age-verification-message">{ageVerificationMessage}</p>}<p className="age-demo-note">Prototype only: document review is simulated. A production app must verify documents securely, protect them, and delete them when no longer needed.</p><button type="submit" className="primary-button age-submit-button"><ShieldCheck size={16} /> Verify age</button></form>}</div></section>}
 
         {activeTab === 'home' && <>
           <div className="dashboard-grid today-dashboard">
             <section className="route-panel panel">
+              <div className="step-target-control">
+                <div className="step-target-heading"><label htmlFor="daily-step-goal"><Zap size={15} /> Today’s step goal</label><div className="step-target-input"><button type="button" aria-label="Decrease step goal" onClick={() => setTargetSteps((value) => Math.max(2000, value - 500))}><Minus size={16} /></button><input id="daily-step-goal" type="number" min="2000" step="500" value={targetSteps} onChange={(event) => setTargetSteps(Math.max(2000, Number(event.target.value) || 2000))} /><button type="button" aria-label="Increase step goal" onClick={() => setTargetSteps((value) => value + 500)}><Plus size={16} /></button><span>steps</span></div></div>
+                <div className="return-control"><span><strong>Return to start</strong><small>{returnEnabled ? `${outboundSteps.toLocaleString()} out · ${returnSteps.toLocaleString()} back` : `${targetSteps.toLocaleString()} steps one way`}</small></span><button type="button" role="switch" aria-checked={returnEnabled} className={`return-switch ${returnEnabled ? 'on' : ''}`} onClick={() => setReturnEnabled((value) => !value)} aria-label="Return to start"><span /></button></div>
+                <small className="step-target-help">Minimum 2,000 steps · route updates to the closest match</small>
+              </div>
               <div className="panel-heading route-heading"><div><div className="section-label"><span className="section-marker" /> TODAY’S LITTLE ADVENTURE</div><h2>{currentRoute.name}</h2><p className="route-area"><MapPin size={13} /> {currentRoute.area}</p></div><button className="text-button" type="button" onClick={() => chooseTab('routes')}>Change route <ChevronRight size={15} /></button></div>
-              <RouteMap />
-              <div className="route-meta"><div className="route-stats"><span><Navigation size={15} /><strong>{currentRoute.distance}</strong><small>distance</small></span><span><Zap size={15} /><strong>{currentRoute.steps}</strong><small>steps</small></span><span><Clock3 size={15} /><strong>{currentRoute.time}</strong><small>at your pace</small></span></div><button type="button" className="primary-button start-button" onClick={handleWalkButton}>{walkStarted ? <Check size={16} /> : <Navigation size={16} />}{walkStarted ? 'Finish this walk' : 'Start this walk'}</button></div>
-              <div className="sponsor-stop"><span className="sponsor-icon"><MapPin size={16} fill="currentColor" /></span><span><small>YOUR LITTLE DETOUR</small><strong>{currentRoute.stop}</strong></span><span className="offer-tag">A treat inside <ArrowUpRight size={13} /></span></div>
+              <div className="route-meta"><div className="route-stats"><span><Navigation size={15} /><strong>{plannedDistanceKm} km</strong><small>{returnEnabled ? 'loop distance' : 'one-way distance'}</small></span><span><Zap size={15} /><strong>{targetSteps.toLocaleString()}</strong><small>total steps</small></span><span><Clock3 size={15} /><strong>{plannedMinutes} min</strong><small>at your pace</small></span></div></div>
+              {walkStarted && <div className="route-progress-panel"><div className="route-progress-heading"><span>ROUTE PROGRESS</span><strong>{routeProgressSteps.toLocaleString()} / {targetSteps.toLocaleString()} steps</strong></div><div className="progress-track"><span style={{ width: `${Math.min(100, Math.round((routeProgressSteps / targetSteps) * 100))}%` }} /></div>{routeProgressSteps < targetSteps ? <button type="button" className="route-log-steps" onClick={logRouteProgress}><Plus size={14} /> Log 500 demo steps</button> : <span className="route-arrived"><Check size={14} /> Destination reached</span>}</div>}
+              {walkStarted && currentRoute.luckyOffer && <div className={`lucky-route-alert ${luckyRedeemed ? 'redeemed' : ''}`} role="status"><Sparkles size={17} /><span><strong>{luckyRedeemed ? 'Lucky offer redeemed' : 'Lucky route offer ahead'}</strong><small>{luckyRedeemed ? currentRoute.luckyOffer.prize : `In ${currentRoute.luckyOffer.meters} meters at ${currentRoute.stop}: ${currentRoute.luckyOffer.prize}.`}</small></span>{!luckyRedeemed && <button type="button" onClick={() => setModal('lucky-offer')}>View code</button>}</div>}
+              <RouteMap shopName={currentRoute.stop} circular={returnEnabled} showPartnerStop={Boolean(currentRoute.luckyOffer)} />
+              <div className="route-start-wrap"><button type="button" className="primary-button start-button" onClick={handleWalkButton}>{walkStarted ? routeProgressSteps >= targetSteps ? <Check size={16} /> : <X size={16} /> : <Navigation size={16} />}{!walkStarted ? 'Start route' : routeProgressSteps >= targetSteps ? 'Complete route' : 'Finish route'}</button></div>
+              <section className="home-below-map">
+                <p className="walk-motivation">A little movement can change the whole shape of your day.</p>
+                <div className="goal-gifts">{promotions.map((offer) => <article className="goal-gift" key={offer.brand}><img src={`https://images.unsplash.com/${offer.image}?auto=format&fit=crop&w=240&h=180&q=80`} alt="" /><span><small>STREAK GOAL GIFT</small><strong>{offer.offer}</strong><em>{offer.brand}</em></span></article>)}</div>
+              </section>
             </section>
 
             <aside className="dashboard-rail">
@@ -325,12 +481,11 @@ function App() {
             </aside>
           </div>
 
-          <section className="offers-section"><div className="offers-title"><div><p className="eyebrow">GOOD STOPS, GOOD PEOPLE</p><h2>A little something along the way.</h2></div><button type="button" className="text-button" onClick={() => chooseTab('rewards')}>All offers <ArrowUpRight size={15} /></button></div><div className="offer-grid">{promotions.map((offer) => <article className={`offer-card ${offer.color}`} key={offer.brand}><img src={`https://images.unsplash.com/${offer.image}?auto=format&fit=crop&w=700&h=380&q=85`} alt={`${offer.brand} cafe`} /><div className="offer-copy"><span className="offer-category">{offer.category}</span><strong>{offer.offer}</strong><p>{offer.brand} <span>·</span> {offer.note}</p></div><button type="button" className="offer-arrow" aria-label={`View ${offer.brand} offer`} onClick={() => chooseTab('rewards')}><ArrowUpRight size={17} /></button></article>)}</div></section>
         </>}
 
-        {activeTab === 'routes' && <section className="subpage"><div className="subpage-heading"><div><p className="eyebrow">YOUR CITY, YOUR PACE</p><h1>Pick a way <em>through.</em></h1><p>Every route passes a local spot worth stopping for.</p></div><button type="button" className="filter-button"><Settings2 size={16} /> Preferences <ChevronDown size={14} /></button></div><div className="route-list">{routes.map((route, index) => <article className={`route-card ${selectedRoute === index ? 'route-card-selected' : ''}`} key={route.name}><div className={`route-card-map map-${route.color}`}><RouteMap compact /><span className="route-card-pin"><MapPin size={17} fill="currentColor" /></span></div><div className="route-card-content"><div className="route-card-title"><div><span className="route-index">0{index + 1} / WALK</span><h2>{route.name}</h2><p><MapPin size={13} /> {route.area}</p></div>{selectedRoute === index && <span className="selected-tag"><Check size={12} /> SELECTED</span>}</div><div className="route-card-stats"><span><Navigation size={14} />{route.distance}</span><span><Zap size={14} />{route.steps} steps</span><span><Clock3 size={14} />{route.time}</span></div><div className="route-card-bottom"><span className="stop-note"><MapPin size={13} /> Passing {route.stop}</span><button type="button" className={selectedRoute === index ? 'secondary-button' : 'primary-button'} onClick={() => { setSelectedRoute(index); chooseTab('home'); showToast(`${route.name} is ready for you.`) }}>{selectedRoute === index ? 'Your route' : 'Choose this route'} <ChevronRight size={15} /></button></div></div></article>)}</div><div className="route-disclaimer"><ShieldCheck size={17} /><span>Routes are a preview. Your live route will adapt to your location and walking pace.</span></div></section>}
+        {activeTab === 'routes' && <section className="subpage"><div className="subpage-heading"><div><p className="eyebrow">YOUR CITY, YOUR PACE</p><h1>Pick a way <em>through.</em></h1><p>Every route passes a local spot worth stopping for.</p></div><button type="button" className="filter-button"><Settings2 size={16} /> Preferences <ChevronDown size={14} /></button></div><div className="route-list">{routes.map((route, index) => <article className={`route-card ${selectedRoute === index ? 'route-card-selected' : ''}`} key={route.name}><div className={`route-card-map map-${route.color}`}><RouteMap compact shopName={route.stop} showPartnerStop={Boolean(route.luckyOffer)} /><span className="route-card-pin">{route.luckyOffer && <MapPin size={17} fill="currentColor" />}</span></div><div className="route-card-content"><div className="route-card-title"><div><span className="route-index">0{index + 1} / WALK</span>{route.luckyOffer && <span className="route-lucky-tag"><Sparkles size={12} /> LUCKY ROUTE</span>}<h2>{route.name}</h2><p><MapPin size={13} /> {route.area}</p></div>{selectedRoute === index && <span className="selected-tag"><Check size={12} /> SELECTED</span>}</div><div className="route-card-stats"><span><Navigation size={14} />{route.distance}</span><span><Zap size={14} />{route.steps} steps</span><span><Clock3 size={14} />{route.time}</span></div><div className="route-card-bottom"><span className="stop-note">{route.luckyOffer ? <><MapPin size={13} /> Offer stop: {route.stop}</> : <><MapPin size={13} /> Local stop included</>}</span><button type="button" className={selectedRoute === index ? 'secondary-button' : 'primary-button'} onClick={() => { setTargetSteps(Number(route.steps.replace(',', ''))); chooseTab('home'); showToast(`${route.name} is ready for your ${route.steps}-step goal.`) }}>{selectedRoute === index ? 'Your route' : 'Choose this route'} <ChevronRight size={15} /></button></div></div></article>)}</div><div className="route-disclaimer"><ShieldCheck size={17} /><span>Routes are a preview. Partner stores are hidden unless you can redeem an offer there. Lucky rewards and odds vary by sponsor.</span></div></section>}
 
-        {activeTab === 'people' && (
+        {activeTab === 'people' && ageAccess === 'verified' && (
           <section className="subpage people-page discover-page">
             <div className="subpage-heading">
               <div><p className="eyebrow">GOOD COMPANY, NO PRESSURE</p><h1>Meet someone <em>new.</em></h1><p>Swipe right to like, left to pass.</p></div>
@@ -341,12 +496,12 @@ function App() {
               <button type="button" onClick={() => chooseTab('likes')}>See your likes <span>{incomingLikes.length}</span></button>
             </div>
             {alarm && <div className="alarm-banner"><span className="alarm-pulse" /><div><strong>Your invite is live</strong><small>It will switch off automatically in 30 minutes.</small></div><button type="button" onClick={() => setAlarm(false)} aria-label="Turn off alarm"><X size={17} /></button></div>}
-            <div className="people-toolbar"><span><span className="online-dot" /> 14 walkers nearby</span><button type="button" className="text-button">Your kind of walk <ChevronDown size={14} /></button></div>
+            <div className="people-toolbar"><span><span className="online-dot" /> {discoverPeople.length} walkers ages {viewerAgeGroup} within 5 km</span><button type="button" className="text-button">Your kind of walk <ChevronDown size={14} /></button></div>
             {currentPerson ? (
               <div className="swipe-deck">
                 <article className="swipe-card" key={currentPerson.name} onPointerDown={startCardSwipe} onPointerUp={finishCardSwipe} onPointerCancel={() => { swipeStartX.current = null }} aria-label={`Swipe profile for ${currentPerson.name}`}>
                   <img className="swipe-photo" src={`https://images.unsplash.com/${currentPerson.image}?auto=format&fit=crop&w=900&h=1100&q=90`} alt={`${currentPerson.name}, a nearby walker`} draggable="false" />
-                  <span className="swipe-distance"><MapPin size={13} /> {personIndex + 1}.{personIndex + 2} km away</span>
+                  <span className="swipe-distance"><MapPin size={13} /> {currentPerson.distanceKm.toFixed(1)} km away</span>
                   <span className="swipe-online"><i /> Around now</span>
                   <div className="swipe-card-shade" />
                   <div className="swipe-profile-copy"><p>{currentPerson.detail}</p><h2>{currentPerson.name}, {currentPerson.age}</h2><p className="swipe-bio">“{currentPerson.bio}”</p><div className="interest-list">{currentPerson.interests.map((interest) => <span key={interest}>{interest}</span>)}</div></div>
@@ -361,7 +516,7 @@ function App() {
           </section>
         )}
 
-        {activeTab === 'likes' && (
+        {activeTab === 'likes' && ageAccess === 'verified' && (
           <section className="subpage likes-page">
             <div className="subpage-heading">
               <div><p className="eyebrow">A LITTLE INTEREST IN YOU</p><h1>They’d like to <em>walk.</em></h1><p>Match back to say hello, or remove a like.</p></div>
@@ -386,7 +541,7 @@ function App() {
           </section>
         )}
 
-        {activeTab === 'messages' && (
+        {activeTab === 'messages' && ageAccess === 'verified' && (
           <section className="subpage messages-page">
             <div className="subpage-heading">
               <div><p className="eyebrow">MAKE A PLAN, THEN WANDER</p><h1>Your <em>people.</em></h1><p>A good walk starts with a hello.</p></div>
@@ -438,18 +593,20 @@ function App() {
         {activeTab === 'rewards' && streak > 0 && <div className="goal-lock-banner"><ShieldCheck size={18} /><span><strong>Your goal is locked</strong><small>Finish or lose this streak before choosing another goal.</small></span></div>}
         {activeTab === 'rewards' && <section className="subpage rewards-page"><div className="subpage-heading"><div><p className="eyebrow">A LITTLE THANK-YOU FOR SHOWING UP</p><h1>Good things <em>add up.</em></h1><p>Choose a streak goal that feels right for you.</p></div><span className="lifetime-badge"><Zap size={16} /> {lifetimeSteps.toLocaleString()} lifetime steps</span></div><section className="goal-section"><div className="goal-heading"><div><span className="section-label"><span className="section-marker coral-marker" /> YOUR STREAK GOAL</span><h2>How often would you like to show up?</h2></div><button type="button" className="freeze-top-link" onClick={() => setModal('freeze')}><Pause size={14} /> Pause a day</button></div><div className="goal-options">{[{ days: 10, bonus: 15000, label: 'A fresh start', glyph: '✳' }, { days: 30, bonus: 55000, label: 'Finding a rhythm', glyph: '↗' }, { days: 50, bonus: 95000, label: 'A real ritual', glyph: '✴' }].map((option) => <button type="button" className={`goal-option ${goal === option.days ? 'goal-selected' : ''}`} key={option.days} onClick={() => { setGoal(option.days); showToast(`${option.days}-day goal selected.`) }}><span className="goal-glyph">{option.glyph}</span><span className="goal-days">{option.days}<small>days</small></span><span className="goal-label">{option.label}</span><span className="goal-bonus">+{option.bonus.toLocaleString()} <small>bonus steps</small></span>{goal === option.days && <span className="goal-check"><Check size={14} /></span>}</button>)}</div><div className="goal-progress-panel"><div><span className="section-label"><span className="section-marker" /> THIS GOAL</span><div className="goal-progress-main"><strong>{streak}<span> / {goal}</span></strong><span>consecutive days</span></div></div><div className="goal-progress-right"><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><p>{goal - streak} more {goal - streak === 1 ? 'walk' : 'walks'} to earn <strong>+{rewardSteps.toLocaleString()} steps</strong></p></div></div><p className="reset-note"><ShieldCheck size={15} /> When you reach your goal, your streak steps reset and the bonus is added to your total.</p></section><section className="rewards-offers"><div className="offers-title"><div><p className="eyebrow">LOCAL LOVE</p><h2>Little perks around town.</h2></div><span className="unlocked-tag"><Check size={13} /> 1 UNLOCKED</span></div><div className="reward-offer-list">{promotions.map((offer, index) => <article className="reward-offer" key={offer.brand}><div className={`reward-offer-thumb ${offer.color}`}><img src={`https://images.unsplash.com/${offer.image}?auto=format&fit=crop&w=240&h=180&q=80`} alt="" /></div><div className="reward-offer-copy"><span className="offer-category">{offer.category}</span><strong>{offer.offer}</strong><small>{offer.brand} · {offer.note}</small></div><span className={`offer-status ${index === 0 ? 'status-locked' : 'status-progress'}`}>{index === 0 ? 'UNLOCKS AT 10 DAYS' : '4 DAYS TO GO'}</span><ChevronRight size={17} /></article>)}</div></section></section>}
 
+        {activeTab === 'rewards' && <section className="subpage extra-rewards-page"><div className="offers-title"><div><p className="eyebrow">MORE WAYS TO CELEBRATE</p><h2>Perks for your bigger goals.</h2></div><span className="reward-count-label">{extraRewards.length} PARTNER GIFTS</span></div><div className="reward-offer-list">{extraRewards.map((reward) => <article className="reward-offer" key={`${reward.brand}-${reward.offer}`}><div className="reward-offer-thumb"><img src={`https://images.unsplash.com/${reward.image}?auto=format&fit=crop&w=240&h=180&q=80`} alt="" /></div><div className="reward-offer-copy"><span className="offer-category">{reward.category} · {reward.brand.toUpperCase()}</span><strong>{reward.offer}</strong><small>{reward.note}</small></div><span className="offer-status status-locked">{reward.milestone}-DAY GOAL</span></article>)}</div><p className="extra-rewards-note"><ShieldCheck size={14} /> Partner gifts vary. Available rewards can be collected in-store after completing the listed streak goal.</p></section>}
+
         {activeTab === 'profile' && (
           <section className="subpage profile-page">
             <div className="subpage-heading">
               <div><p className="eyebrow">A LITTLE ABOUT YOU</p><h1>Your <em>story.</em></h1><p>Help your next walking buddy get to know you.</p></div>
-              <button type="button" className="secondary-button"><Settings2 size={15} /> Preferences</button>
+              <div className="appearance-setting"><span className="appearance-setting-icon">{nightMode ? <Moon size={18} /> : <Sun size={18} />}</span><span className="appearance-setting-copy"><strong>Night mode</strong><small>{nightMode ? 'On · saved for next time' : 'Off · daytime colors'}</small></span><button type="button" role="switch" aria-checked={nightMode} aria-label="Night mode" className={`appearance-switch ${nightMode ? 'on' : ''}`} onClick={() => setNightMode((value) => !value)}><span /></button></div>
             </div>
             <div className="profile-layout">
               <section className="profile-card panel">
                 <div className="profile-cover"><span>ATHENS, GREECE <span>·</span> 37°58′N</span></div>
                 <div className="profile-avatar-row">
-                  <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=180&h=180&q=85" alt="Elena's profile" />
-                  <button type="button" className="secondary-button">Change photo</button>
+                  <span className="profile-photo-wrap"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=180&h=180&q=85" alt="Elena's profile" />{profileVerified && <span className="verified-photo-badge" aria-label="Verified profile photo"><BadgeCheck size={20} fill="currentColor" /></span>}</span>
+                  <div className="profile-avatar-actions"><button type="button" className="secondary-button">Change photo</button><button type="button" className={`verify-photo-button ${profileVerified ? 'verified' : ''}`} onClick={() => setModal('verify-photo')} disabled={profileVerified}>{profileVerified ? <><BadgeCheck size={14} /> Photo verified</> : <><ShieldCheck size={14} /> Verify photo</>}</button></div>
                 </div>
                 <form className="profile-form" onSubmit={(event) => { event.preventDefault(); setProfileSaved(true); showToast('Your profile has been saved.') }}>
                   <div className="form-two">
@@ -484,10 +641,14 @@ function App() {
       {modal && <div className="modal-backdrop" onClick={() => setModal('')}><section className={`modal-card ${modal === 'reward' ? 'reward-modal' : ''} ${modal === 'failed' ? 'failed-modal' : ''}`} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="modal-close" aria-label="Close dialog" onClick={() => setModal('')}><X size={18} /></button>
         {modal === 'streak' && <><div className="modal-icon streak-modal-icon"><Flame size={21} fill="currentColor" /></div><p className="eyebrow">YOUR WALKING RHYTHM</p><h2>{streak} day streak</h2><p className="modal-description">Your current goal is set to <strong>{goal} days</strong>. Keep going to unlock your bonus.</p><div className="streak-modal-progress"><div className="progress-caption"><span>DAY {streak} OF {goal}</span><strong>{goal - streak} TO GO</strong></div><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><div className="streak-modal-reward"><Star size={15} fill="currentColor" /> +{rewardSteps.toLocaleString()} bonus steps</div></div><button type="button" className="primary-button modal-submit" onClick={() => { setFreezeReason(''); setFreezeMessage(''); setModal('freeze') }}><Pause size={15} /> Freeze this streak</button></>}
+        {modal === 'stop-route' && <><div className="modal-icon stop-route-icon"><Frown size={22} /></div><p className="eyebrow">ROUTE IN PROGRESS</p><h2>Are you sure you want to stop your route?</h2><p className="modal-description">Your {routeProgressSteps.toLocaleString()} route steps won’t count toward your total, and your streak won’t advance.</p><div className="stop-route-actions"><button type="button" className="secondary-button" onClick={() => setModal('')}>No, keep walking</button><button type="button" className="stop-route-confirm" onClick={confirmStopRoute}>Yes, stop route</button></div></>}
+        {modal === 'route-complete' && <div className="route-complete-content"><div className="fireworks-scene"><Sparkles size={25} /><PartyPopper size={32} /><Sparkles size={18} /></div><p className="eyebrow">YOU MADE IT</p><h2>Beautifully done!</h2><p className="modal-description">You completed your {targetSteps.toLocaleString()}-step route. Your steps have been added to your goal.</p><div className="route-complete-stats"><span><Flame size={16} /> {streak} day streak</span><span><Zap size={16} /> {goalSteps.toLocaleString()} goal steps</span></div><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Keep going</button></div>}
+        {modal === 'lucky-offer' && currentRoute.luckyOffer && <><div className="modal-icon lucky-modal-icon"><Sparkles size={20} /></div><p className="eyebrow">LUCKY ROUTE · {currentRoute.stop.toUpperCase()}</p><h2>{currentRoute.luckyOffer.prize}</h2><p className="modal-description">You’re about {currentRoute.luckyOffer.meters} meters from the store. Show this sponsor-funded code to the cashier.</p><div className="lucky-code-card"><small>YOUR REDEMPTION CODE</small><strong>{currentRoute.luckyOffer.code}</strong></div><p className="lucky-odds-note">{currentRoute.luckyOffer.chance}. One offer per eligible route; prizes may vary.</p><button type="button" className="primary-button modal-submit" onClick={() => { setLuckyRedeemed(true); setModal('') }}><Check size={15} /> Mark as redeemed</button></>}
+        {modal === 'verify-photo' && <><div className="modal-icon verify-modal-icon"><BadgeCheck size={21} /></div><p className="eyebrow">A SAFER WAY TO SAY HELLO</p><h2>Verify your profile photo.</h2><p className="modal-description">A full app would ask for a live selfie and securely compare it with your profile photo. Verified profiles show a checkmark to other walkers.</p><div className="verification-preview"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=85" alt="Current profile photo for the demo check" /><span><BadgeCheck size={18} /> Selfie check preview</span></div><p className="verification-demo-note">Prototype only: this button simulates the check and does not access your camera or verify identity.</p><button type="button" className="primary-button modal-submit" onClick={completePhotoVerification}><BadgeCheck size={16} /> Run demo verification</button></>}
         {modal === 'freeze' && <><div className="modal-icon pause-modal-icon"><Pause size={20} /></div><p className="eyebrow">A DAY OFF IS PART OF THE PLAN</p><h2>Pause your streak.</h2><p className="modal-description">Life happens. Choose what’s up and we’ll keep your streak right where it is.</p><div className="freeze-options">{['Illness or injury', 'Rest day', 'I don’t have time', 'Bad weather'].map((reason) => <button type="button" key={reason} className={freezeReason === reason ? 'selected' : ''} onClick={() => { setFreezeReason(reason); setFreezeMessage('') }}><span className={`reason-dot ${freezeReason === reason ? 'checked' : ''}`}>{freezeReason === reason && <Check size={11} />}</span><span>{reason}</span>{reason === 'Bad weather' ? <small>Unlimited · forecast checked</small> : <small>{freezePasses[reason]} of 3 left</small>}</button>)}</div>{freezeMessage && <p className={`freeze-feedback ${freezeReason === 'Bad weather' ? 'freeze-error' : ''}`}>{freezeMessage}</p>}<button type="button" className="primary-button modal-submit" onClick={submitFreeze}><Pause size={15} /> Freeze today</button><p className="modal-footnote"><Sun size={13} /> Bad weather is checked against your local forecast.</p></>}
         {modal === 'schedule' && <>{scheduleSent ? <><div className="modal-icon success-modal-icon"><Check size={21} /></div><p className="eyebrow">SOMETHING TO LOOK FORWARD TO</p><h2>Walk invite sent.</h2><p className="modal-description">We’ll let your match know and message you when they reply.</p><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Lovely <Check size={15} /></button></> : <><div className="modal-icon schedule-modal-icon"><CalendarDays size={20} /></div><p className="eyebrow">MAKE A LITTLE PLAN</p><h2>Schedule a walk.</h2><p className="modal-description">Pick a time and we’ll find a lovely route for the two of you.</p><div className="schedule-form"><label>DAY<input type="date" defaultValue="2026-05-20" /></label><label>TIME<input type="time" defaultValue="10:30" /></label><label>YOUR WALK<select defaultValue="3200"><option value="3200">Around 3,200 steps · 2.4 km</option><option value="5100">Around 5,100 steps · 3.8 km</option><option value="7000">Around 7,000 steps · 5.2 km</option></select></label></div><div className="meeting-note"><MapPin size={16} /><span><strong>We’ll pick a meeting point</strong><small>Somewhere easy to find, near both of you.</small></span></div><button type="button" className="primary-button modal-submit" onClick={() => setScheduleSent(true)}><CalendarDays size={15} /> Send walk invite</button></>}</>}
         {modal === 'match' && <><div className="match-spark">✳</div><p className="eyebrow">A LITTLE ATHENS MAGIC</p><h2>Well, hello <em>{matchedPerson.name}.</em></h2><p className="modal-description">You both want the long way home. Say hello, or make a plan for a walk.</p><div className="match-avatars"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Elena" /><Heart size={19} fill="currentColor" /><img src={`https://images.unsplash.com/${matchedPerson.image}?auto=format&fit=crop&w=120&h=120&q=80`} alt={matchedPerson.name} /></div><button type="button" className="primary-button modal-submit" onClick={() => { setModal('schedule'); setScheduleSent(false) }}><CalendarDays size={15} /> Schedule a walk</button><button type="button" className="text-button match-dismiss" onClick={() => { setModal(''); chooseTab('messages') }}><MessageCircle size={15} /> Say hello in messages</button></>}
-        {modal === 'reward' && <><div className="reward-confetti">✳</div><p className="eyebrow">YOU SHOWED UP FOR YOU</p><h2>{goal} days, <em>beautifully done.</em></h2><p className="modal-description">Your streak steps reset and your bonus has been added. Choose a goal for your next streak.</p><div className="bonus-stamp"><Sparkles size={20} /><strong>+{rewardSteps.toLocaleString()}</strong><span>BONUS STEPS</span></div><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => { setModal(''); chooseTab('rewards') }}>Choose later <ArrowUpRight size={14} /></button></>}
+        {modal === 'reward' && <><div className="fireworks-scene reward-fireworks" aria-hidden="true"><Sparkles size={25} /><PartyPopper size={32} /><Sparkles size={18} /></div><p className="eyebrow">YOU SHOWED UP FOR YOU</p><h2>{goal} days, <em>beautifully done.</em></h2><p className="modal-description">Your streak steps reset and your bonus has been added. Choose a goal for your next streak.</p><div className="bonus-stamp"><Sparkles size={20} /><strong>+{rewardSteps.toLocaleString()}</strong><span>BONUS STEPS</span></div><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => { setModal(''); chooseTab('rewards') }}>Choose later <ArrowUpRight size={14} /></button></>}
         {modal === 'failed' && <><div className="modal-icon failed-modal-icon"><RefreshCw size={20} /></div><p className="eyebrow">A FRESH START IS STILL A START</p><h2>Your streak ended.</h2><p className="modal-description">Your steps have reset, and there’s no reward this time. Choose a new goal and begin again whenever you’re ready.</p><p className="next-goal-label">CHOOSE YOUR NEXT GOAL</p><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => setModal('')}>Maybe later</button></>}
       </section></div>}
       {toast && <div className="toast-message"><Check size={16} /> {toast}</div>}
