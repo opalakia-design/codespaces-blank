@@ -1,13 +1,14 @@
 import { useRef, useState } from 'react'
 import {
+  ArrowLeft,
   ArrowUpRight,
-  Bell,
   CalendarDays,
   Check,
   ChevronDown,
   ChevronRight,
   Clock3,
   Compass,
+  Flame,
   Heart,
   MapPin,
   MessageCircle,
@@ -18,6 +19,7 @@ import {
   Plus,
   RefreshCw,
   Settings2,
+  Send,
   ShieldCheck,
   Sparkles,
   Star,
@@ -38,6 +40,12 @@ const people = [
   { name: 'Nina', age: 27, detail: 'Ceramicist · Plaka', bio: 'Looking for the long way home, always.', image: 'photo-1534528741775-53994a69daeb', interests: ['Slow mornings', 'Dogs', 'Jazz'] },
   { name: 'Alex', age: 29, detail: 'Architect · Pangrati', bio: 'I know a shortcut, but let’s not take it.', image: 'photo-1500648767791-00dcc994a43e', interests: ['Architecture', 'Coffee', 'Hikes'] },
   { name: 'Maya', age: 26, detail: 'Researcher · Exarchia', bio: 'Collecting bookstores and steps.', image: 'photo-1531123897727-8f129e1688ce', interests: ['Books', 'Cats', 'Live music'] },
+]
+
+const conversations = [
+  { name: 'Nina', image: people[0].image, preview: 'That little coffee stop sounds perfect ☀', time: '10:42', unread: true, messages: [{ author: 'them', text: 'Hi Elena! I found a lovely little loop near Plaka.', time: '10:31' }, { author: 'me', text: 'That sounds lovely. I could use a coffee stop too.', time: '10:36' }, { author: 'them', text: 'That little coffee stop sounds perfect ☀', time: '10:42' }] },
+  { name: 'Alex', image: people[1].image, preview: 'I know a quiet route by the gardens', time: 'Yesterday', unread: true, messages: [{ author: 'them', text: 'I know a quiet route by the gardens if you’re up for it.', time: 'Yesterday' }] },
+  { name: 'Maya', image: people[2].image, preview: 'See you Saturday!', time: 'Sun', unread: false, messages: [{ author: 'me', text: 'Shall we meet around the National Garden?', time: 'Sun' }, { author: 'them', text: 'See you Saturday!', time: 'Sun' }] },
 ]
 
 const promotions = [
@@ -120,10 +128,16 @@ function App() {
   const [toast, setToast] = useState('')
   const [profileSaved, setProfileSaved] = useState(false)
   const [scheduleSent, setScheduleSent] = useState(false)
+  const [chatItems, setChatItems] = useState(conversations)
+  const [incomingLikes, setIncomingLikes] = useState(people)
+  const [matchedPerson, setMatchedPerson] = useState(people[0])
+  const [activeChat, setActiveChat] = useState('')
+  const [draftMessage, setDraftMessage] = useState('')
   const [personIndex, setPersonIndex] = useState(0)
   const swipeStartX = useRef(null)
   const currentRoute = routes[selectedRoute]
   const currentPerson = people[personIndex]
+  const currentChat = chatItems.find((chat) => chat.name === activeChat)
   const rewardSteps = goal === 10 ? 15000 : goal === 30 ? 55000 : 95000
   const progress = Math.min(100, Math.round((streak / goal) * 100))
 
@@ -174,13 +188,6 @@ function App() {
     showToast(`Your ${nextGoal}-day goal is ready. Start fresh.`)
   }
 
-  function previewMissedDay() {
-    setStreak(0)
-    setSteps(0)
-    setWalkStarted(false)
-    setModal('failed')
-  }
-
   function submitFreeze() {
     if (!freezeReason) {
       setFreezeMessage('Choose a reason to pause your streak.')
@@ -210,11 +217,42 @@ function App() {
   }
 
   function likePerson(person) {
+    setMatchedPerson(person)
     if (person.name === 'Nina') {
       setModal('match')
     } else {
       showToast(`You liked ${person.name}. Fingers crossed!`)
     }
+  }
+
+  function removeIncomingLike(person) {
+    setIncomingLikes((likes) => likes.filter((like) => like.name !== person.name))
+    showToast(`${person.name}’s like was removed.`)
+  }
+
+  function matchBack(person) {
+    setMatchedPerson(person)
+    setIncomingLikes((likes) => likes.filter((like) => like.name !== person.name))
+    setModal('match')
+  }
+
+  function openChat(name) {
+    setActiveChat(name)
+    setDraftMessage('')
+    setChatItems((items) => items.map((chat) => chat.name === name ? { ...chat, unread: false } : chat))
+  }
+
+  function sendChatMessage(event) {
+    event.preventDefault()
+    const text = draftMessage.trim()
+    if (!text || !activeChat) return
+    setChatItems((items) => items.map((chat) => chat.name === activeChat ? {
+      ...chat,
+      preview: text,
+      time: 'now',
+      messages: [...chat.messages, { author: 'me', text, time: 'now' }],
+    } : chat))
+    setDraftMessage('')
   }
 
   function choosePerson(direction) {
@@ -241,8 +279,6 @@ function App() {
     if (distance < -75) choosePerson('left')
   }
 
-  const activeTitle = navItems.find((item) => item.id === activeTab)?.label || 'Your profile'
-
   return (
     <div className={`app-shell ${streak > 0 ? 'goal-in-progress' : ''} ${nightMode ? 'night-mode' : ''}`}>
       <aside className="sidebar">
@@ -267,19 +303,12 @@ function App() {
 
       <main className="main-content">
         <header className="topbar">
-          <div className="breadcrumb"><span>YOUR SPACE</span><ChevronRight size={13} /><strong>{activeTitle}</strong></div>
-          <div className="topbar-actions"><span className="weather-pill"><Sun size={15} /> 23° <i>Sunny in Athens</i></span><button type="button" className="icon-button theme-toggle" aria-label={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} title={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} onClick={() => setNightMode((value) => !value)}>{nightMode ? <Sun size={18} /> : <Moon size={18} />}</button><button type="button" className="icon-button messages-shortcut" aria-label="Messages and matches, 2 unread" title="Messages and matches" onClick={() => chooseTab('messages')}><MessageCircle size={18} /><span className="message-count">2</span></button><button type="button" className="icon-button notification-button" aria-label="Notifications" onClick={() => showToast('You’re all caught up.')}><Bell size={18} /><span /></button><button type="button" className="top-avatar" onClick={() => chooseTab('profile')}><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=96&h=96&q=80" alt="Elena P." /></button></div>
+          <button type="button" className="streak-header-control" onClick={() => setModal('streak')} aria-label={`${streak}-day streak, ${goal}-day goal. Open streak options`} title="Streak details"><Flame size={18} fill="currentColor" /><strong>{streak}</strong></button>
+          <div className="topbar-actions"><span className="weather-pill"><Sun size={15} /> 23° <i>Sunny in Athens</i></span><button type="button" className="icon-button theme-toggle" aria-label={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} title={nightMode ? 'Switch to daytime colors' : 'Switch to night colors'} onClick={() => setNightMode((value) => !value)}>{nightMode ? <Sun size={18} /> : <Moon size={18} />}</button><button type="button" className="icon-button messages-shortcut" aria-label="Messages and matches, 2 unread" title="Messages and matches" onClick={() => chooseTab('messages')}><MessageCircle size={18} /><span className="message-count">2</span></button></div>
         </header>
 
         {activeTab === 'home' && <>
-          <section className="welcome-row">
-            <div><p className="eyebrow">MONDAY, NOVEMBER 2 <span className="eyebrow-spark">✳</span> YOUR ATHENS</p><h1>A little further,<br /><em>just because.</em></h1><p className="welcome-copy">A good day to get a little lost, Elena.</p></div>
-            <button type="button" className="alarm-button" onClick={() => { setAlarm((value) => !value); showToast(alarm ? 'Walk alarm turned off.' : 'Your walk alarm is live for 30 minutes.') }}><span className={`alarm-icon ${alarm ? 'alarm-live' : ''}`}><Zap size={17} fill="currentColor" /></span><span>{alarm ? 'Alarm is live' : 'Find a buddy now'}</span><ArrowUpRight size={16} /></button>
-          </section>
-
-          {alarm && <div className="alarm-banner"><span className="alarm-pulse" /><div><strong>You’re on the radar</strong><small>Nearby walkers can see your invite for the next 30 minutes.</small></div><button type="button" onClick={() => setAlarm(false)} aria-label="Turn off alarm"><X size={17} /></button></div>}
-
-          <div className="dashboard-grid">
+          <div className="dashboard-grid today-dashboard">
             <section className="route-panel panel">
               <div className="panel-heading route-heading"><div><div className="section-label"><span className="section-marker" /> TODAY’S LITTLE ADVENTURE</div><h2>{currentRoute.name}</h2><p className="route-area"><MapPin size={13} /> {currentRoute.area}</p></div><button className="text-button" type="button" onClick={() => chooseTab('routes')}>Change route <ChevronRight size={15} /></button></div>
               <RouteMap />
@@ -296,8 +325,6 @@ function App() {
             </aside>
           </div>
 
-          <button type="button" className="missed-day-link" onClick={previewMissedDay}>Missed a day? <span>See how a fresh start works</span></button>
-
           <section className="offers-section"><div className="offers-title"><div><p className="eyebrow">GOOD STOPS, GOOD PEOPLE</p><h2>A little something along the way.</h2></div><button type="button" className="text-button" onClick={() => chooseTab('rewards')}>All offers <ArrowUpRight size={15} /></button></div><div className="offer-grid">{promotions.map((offer) => <article className={`offer-card ${offer.color}`} key={offer.brand}><img src={`https://images.unsplash.com/${offer.image}?auto=format&fit=crop&w=700&h=380&q=85`} alt={`${offer.brand} cafe`} /><div className="offer-copy"><span className="offer-category">{offer.category}</span><strong>{offer.offer}</strong><p>{offer.brand} <span>·</span> {offer.note}</p></div><button type="button" className="offer-arrow" aria-label={`View ${offer.brand} offer`} onClick={() => chooseTab('rewards')}><ArrowUpRight size={17} /></button></article>)}</div></section>
         </>}
 
@@ -308,6 +335,10 @@ function App() {
             <div className="subpage-heading">
               <div><p className="eyebrow">GOOD COMPANY, NO PRESSURE</p><h1>Meet someone <em>new.</em></h1><p>Swipe right to like, left to pass.</p></div>
               <button type="button" className={`alarm-button ${alarm ? 'alarm-button-on' : ''}`} onClick={() => setAlarm((value) => !value)}><span className={`alarm-icon ${alarm ? 'alarm-live' : ''}`}><Zap size={17} fill="currentColor" /></span>{alarm ? 'Alarm is live' : 'Invite someone now'}<ArrowUpRight size={16} /></button>
+            </div>
+            <div className="discover-switch" role="group" aria-label="Discover and likes">
+              <button type="button" className="selected" onClick={() => chooseTab('people')}>Discover</button>
+              <button type="button" onClick={() => chooseTab('likes')}>See your likes <span>{incomingLikes.length}</span></button>
             </div>
             {alarm && <div className="alarm-banner"><span className="alarm-pulse" /><div><strong>Your invite is live</strong><small>It will switch off automatically in 30 minutes.</small></div><button type="button" onClick={() => setAlarm(false)} aria-label="Turn off alarm"><X size={17} /></button></div>}
             <div className="people-toolbar"><span><span className="online-dot" /> 14 walkers nearby</span><button type="button" className="text-button">Your kind of walk <ChevronDown size={14} /></button></div>
@@ -330,36 +361,77 @@ function App() {
           </section>
         )}
 
+        {activeTab === 'likes' && (
+          <section className="subpage likes-page">
+            <div className="subpage-heading">
+              <div><p className="eyebrow">A LITTLE INTEREST IN YOU</p><h1>They’d like to <em>walk.</em></h1><p>Match back to say hello, or remove a like.</p></div>
+              <span className="likes-count-badge"><Heart size={15} fill="currentColor" /> {incomingLikes.length} {incomingLikes.length === 1 ? 'like' : 'likes'}</span>
+            </div>
+            <div className="discover-switch" role="group" aria-label="Discover and likes">
+              <button type="button" onClick={() => chooseTab('people')}>Discover</button>
+              <button type="button" className="selected" onClick={() => chooseTab('likes')}>See your likes <span>{incomingLikes.length}</span></button>
+            </div>
+            {incomingLikes.length > 0 ? (
+              <div className="likes-list">
+                {incomingLikes.map((person) => (
+                  <article className="incoming-like-card" key={person.name}>
+                    <img className="incoming-like-photo" src={`https://images.unsplash.com/${person.image}?auto=format&fit=crop&w=240&h=280&q=85`} alt={`${person.name}, a walker who liked you`} />
+                    <div className="incoming-like-info"><span className="like-note"><Heart size={12} fill="currentColor" /> LIKED YOUR PROFILE</span><h2>{person.name}, {person.age}</h2><p>{person.detail}</p><small>“{person.bio}”</small><div className="incoming-like-actions"><button type="button" className="match-back-button" onClick={() => matchBack(person)}><Heart size={15} fill="currentColor" /> Match back</button><button type="button" className="remove-like-button" onClick={() => removeIncomingLike(person)}><X size={14} /> Remove</button></div></div>
+                  </article>
+                ))}
+              </div>
+            ) : (
+              <div className="likes-empty"><div className="empty-message-icon"><Heart size={23} /></div><h2>You’re all caught up.</h2><p>New likes will show up here.</p><button type="button" className="secondary-button" onClick={() => chooseTab('people')}><Users size={15} /> Discover walkers</button></div>
+            )}
+          </section>
+        )}
+
         {activeTab === 'messages' && (
           <section className="subpage messages-page">
             <div className="subpage-heading">
               <div><p className="eyebrow">MAKE A PLAN, THEN WANDER</p><h1>Your <em>people.</em></h1><p>A good walk starts with a hello.</p></div>
               <button type="button" className="primary-button" onClick={() => chooseTab('people')}><Users size={16} /> Discover walkers</button>
             </div>
-            <section className="matches-section">
-              <div className="matches-heading"><h2>Your matches</h2><span>{people.length} walkers</span></div>
-              <div className="matches-strip">
-                {people.map((person) => (
-                  <button type="button" className="match-person" key={person.name} onClick={() => { setScheduleSent(false); setModal('schedule') }} aria-label={`Open ${person.name}'s chat and schedule a walk`}>
-                    <span className="match-avatar-wrap"><img src={`https://images.unsplash.com/${person.image}?auto=format&fit=crop&w=112&h=112&q=85`} alt="" /><i /></span>
-                    <strong>{person.name}</strong>
-                  </button>
-                ))}
+            {!activeChat && <>
+              <section className="matches-section">
+                <div className="matches-heading"><h2>Your matches</h2><span>{people.length} walkers</span></div>
+                <div className="matches-strip">
+                  {people.map((person) => (
+                    <button type="button" className="match-person" key={person.name} onClick={() => openChat(person.name)} aria-label={`Open ${person.name}'s chat`}>
+                      <span className="match-avatar-wrap"><img src={`https://images.unsplash.com/${person.image}?auto=format&fit=crop&w=112&h=112&q=85`} alt="" /><i /></span>
+                      <strong>{person.name}</strong>
+                    </button>
+                  ))}
+                </div>
+              </section>
+              <div className="messages-layout">
+                <div className="conversation-list">
+                  <div className="conversation-list-header"><h2>Your chats</h2><span>{chatItems.filter((chat) => chat.unread).length} new</span></div>
+                  {chatItems.map((chat) => (
+                    <button type="button" className="conversation-row" key={chat.name} onClick={() => openChat(chat.name)}>
+                      <img src={`https://images.unsplash.com/${chat.image}?auto=format&fit=crop&w=96&h=96&q=80`} alt="" />
+                      <span><strong>{chat.name}</strong><small>{chat.preview}</small></span>
+                      <span className="conversation-time">{chat.time}{chat.unread && <i />}</span>
+                    </button>
+                  ))}
+                </div>
               </div>
-            </section>
-            <div className="messages-layout">
-              <div className="conversation-list">
-                <div className="conversation-list-header"><h2>Your chats</h2><span>2 new</span></div>
-                {[{ name: 'Nina', image: people[0].image, message: 'That little coffee stop sounds perfect ☀', time: '10:42', unread: true }, { name: 'Alex', image: people[1].image, message: 'I know a quiet route by the gardens', time: 'Yesterday', unread: true }, { name: 'Maya', image: people[2].image, message: 'See you Saturday!', time: 'Sun' }].map((person) => (
-                  <button type="button" className="conversation-row" key={person.name} onClick={() => { setScheduleSent(false); setModal('schedule') }}>
-                    <img src={`https://images.unsplash.com/${person.image}?auto=format&fit=crop&w=96&h=96&q=80`} alt="" />
-                    <span><strong>{person.name}</strong><small>{person.message}</small></span>
-                    <span className="conversation-time">{person.time}{person.unread && <i />}</span>
-                  </button>
-                ))}
+            </>}
+            {activeChat && currentChat && <section className="chat-thread">
+              <header className="chat-thread-header">
+                <button type="button" className="chat-back-button" aria-label="Back to chats" onClick={() => setActiveChat('')}><ArrowLeft size={18} /></button>
+                <img src={`https://images.unsplash.com/${currentChat.image}?auto=format&fit=crop&w=96&h=96&q=85`} alt="" />
+                <span className="chat-contact"><strong>{currentChat.name}</strong><small><i /> Matched walker</small></span>
+                <button type="button" className="chat-schedule-button" onClick={() => { setScheduleSent(false); setModal('schedule') }}><CalendarDays size={15} /><span>Schedule a walk</span></button>
+              </header>
+              <div className="chat-thread-messages">
+                {currentChat.messages.map((message, index) => <div className={`chat-message ${message.author === 'me' ? 'chat-message-outgoing' : ''}`} key={`${currentChat.name}-${index}`}><p>{message.text}</p><time>{message.time}</time></div>)}
               </div>
-              <div className="conversation-empty"><div className="empty-message-icon"><MessageCircle size={23} /></div><p>Choose a conversation</p><span>Your next walk could start here.</span></div>
-            </div>
+              <form className="chat-compose" onSubmit={sendChatMessage}>
+                <input value={draftMessage} onChange={(event) => setDraftMessage(event.target.value)} aria-label={`Message ${currentChat.name}`} placeholder={`Message ${currentChat.name}...`} />
+                <button type="submit" aria-label="Send message" disabled={!draftMessage.trim()}><Send size={17} /></button>
+              </form>
+            </section>}
           </section>
         )}
 
@@ -411,9 +483,10 @@ function App() {
 
       {modal && <div className="modal-backdrop" onClick={() => setModal('')}><section className={`modal-card ${modal === 'reward' ? 'reward-modal' : ''} ${modal === 'failed' ? 'failed-modal' : ''}`} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
         <button type="button" className="modal-close" aria-label="Close dialog" onClick={() => setModal('')}><X size={18} /></button>
+        {modal === 'streak' && <><div className="modal-icon streak-modal-icon"><Flame size={21} fill="currentColor" /></div><p className="eyebrow">YOUR WALKING RHYTHM</p><h2>{streak} day streak</h2><p className="modal-description">Your current goal is set to <strong>{goal} days</strong>. Keep going to unlock your bonus.</p><div className="streak-modal-progress"><div className="progress-caption"><span>DAY {streak} OF {goal}</span><strong>{goal - streak} TO GO</strong></div><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><div className="streak-modal-reward"><Star size={15} fill="currentColor" /> +{rewardSteps.toLocaleString()} bonus steps</div></div><button type="button" className="primary-button modal-submit" onClick={() => { setFreezeReason(''); setFreezeMessage(''); setModal('freeze') }}><Pause size={15} /> Freeze this streak</button></>}
         {modal === 'freeze' && <><div className="modal-icon pause-modal-icon"><Pause size={20} /></div><p className="eyebrow">A DAY OFF IS PART OF THE PLAN</p><h2>Pause your streak.</h2><p className="modal-description">Life happens. Choose what’s up and we’ll keep your streak right where it is.</p><div className="freeze-options">{['Illness or injury', 'Rest day', 'I don’t have time', 'Bad weather'].map((reason) => <button type="button" key={reason} className={freezeReason === reason ? 'selected' : ''} onClick={() => { setFreezeReason(reason); setFreezeMessage('') }}><span className={`reason-dot ${freezeReason === reason ? 'checked' : ''}`}>{freezeReason === reason && <Check size={11} />}</span><span>{reason}</span>{reason === 'Bad weather' ? <small>Unlimited · forecast checked</small> : <small>{freezePasses[reason]} of 3 left</small>}</button>)}</div>{freezeMessage && <p className={`freeze-feedback ${freezeReason === 'Bad weather' ? 'freeze-error' : ''}`}>{freezeMessage}</p>}<button type="button" className="primary-button modal-submit" onClick={submitFreeze}><Pause size={15} /> Freeze today</button><p className="modal-footnote"><Sun size={13} /> Bad weather is checked against your local forecast.</p></>}
-        {modal === 'schedule' && <>{scheduleSent ? <><div className="modal-icon success-modal-icon"><Check size={21} /></div><p className="eyebrow">SOMETHING TO LOOK FORWARD TO</p><h2>Walk invite sent.</h2><p className="modal-description">We’ll let you know when Nina gets back to you.</p><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Lovely <Check size={15} /></button></> : <><div className="modal-icon schedule-modal-icon"><CalendarDays size={20} /></div><p className="eyebrow">MAKE A LITTLE PLAN</p><h2>Schedule a walk.</h2><p className="modal-description">Pick a time and we’ll find a lovely route for the two of you.</p><div className="schedule-form"><label>DAY<input type="date" defaultValue="2026-05-20" /></label><label>TIME<input type="time" defaultValue="10:30" /></label><label>YOUR WALK<select defaultValue="3200"><option value="3200">Around 3,200 steps · 2.4 km</option><option value="5100">Around 5,100 steps · 3.8 km</option><option value="7000">Around 7,000 steps · 5.2 km</option></select></label></div><div className="meeting-note"><MapPin size={16} /><span><strong>We’ll pick a meeting point</strong><small>Somewhere easy to find, near both of you.</small></span></div><button type="button" className="primary-button modal-submit" onClick={() => setScheduleSent(true)}><CalendarDays size={15} /> Send walk invite</button></>}</>}
-        {modal === 'match' && <><div className="match-spark">✳</div><p className="eyebrow">A LITTLE ATHENS MAGIC</p><h2>Well, hello <em>Nina.</em></h2><p className="modal-description">You both want the long way home. Say hello, or make a plan for a walk.</p><div className="match-avatars"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Elena" /><Heart size={19} fill="currentColor" /><img src={`https://images.unsplash.com/${people[0].image}?auto=format&fit=crop&w=120&h=120&q=80`} alt="Nina" /></div><button type="button" className="primary-button modal-submit" onClick={() => { setModal('schedule'); setScheduleSent(false) }}><CalendarDays size={15} /> Schedule a walk</button><button type="button" className="text-button match-dismiss" onClick={() => { setModal(''); chooseTab('messages') }}><MessageCircle size={15} /> Say hello in messages</button></>}
+        {modal === 'schedule' && <>{scheduleSent ? <><div className="modal-icon success-modal-icon"><Check size={21} /></div><p className="eyebrow">SOMETHING TO LOOK FORWARD TO</p><h2>Walk invite sent.</h2><p className="modal-description">We’ll let your match know and message you when they reply.</p><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Lovely <Check size={15} /></button></> : <><div className="modal-icon schedule-modal-icon"><CalendarDays size={20} /></div><p className="eyebrow">MAKE A LITTLE PLAN</p><h2>Schedule a walk.</h2><p className="modal-description">Pick a time and we’ll find a lovely route for the two of you.</p><div className="schedule-form"><label>DAY<input type="date" defaultValue="2026-05-20" /></label><label>TIME<input type="time" defaultValue="10:30" /></label><label>YOUR WALK<select defaultValue="3200"><option value="3200">Around 3,200 steps · 2.4 km</option><option value="5100">Around 5,100 steps · 3.8 km</option><option value="7000">Around 7,000 steps · 5.2 km</option></select></label></div><div className="meeting-note"><MapPin size={16} /><span><strong>We’ll pick a meeting point</strong><small>Somewhere easy to find, near both of you.</small></span></div><button type="button" className="primary-button modal-submit" onClick={() => setScheduleSent(true)}><CalendarDays size={15} /> Send walk invite</button></>}</>}
+        {modal === 'match' && <><div className="match-spark">✳</div><p className="eyebrow">A LITTLE ATHENS MAGIC</p><h2>Well, hello <em>{matchedPerson.name}.</em></h2><p className="modal-description">You both want the long way home. Say hello, or make a plan for a walk.</p><div className="match-avatars"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Elena" /><Heart size={19} fill="currentColor" /><img src={`https://images.unsplash.com/${matchedPerson.image}?auto=format&fit=crop&w=120&h=120&q=80`} alt={matchedPerson.name} /></div><button type="button" className="primary-button modal-submit" onClick={() => { setModal('schedule'); setScheduleSent(false) }}><CalendarDays size={15} /> Schedule a walk</button><button type="button" className="text-button match-dismiss" onClick={() => { setModal(''); chooseTab('messages') }}><MessageCircle size={15} /> Say hello in messages</button></>}
         {modal === 'reward' && <><div className="reward-confetti">✳</div><p className="eyebrow">YOU SHOWED UP FOR YOU</p><h2>{goal} days, <em>beautifully done.</em></h2><p className="modal-description">Your streak steps reset and your bonus has been added. Choose a goal for your next streak.</p><div className="bonus-stamp"><Sparkles size={20} /><strong>+{rewardSteps.toLocaleString()}</strong><span>BONUS STEPS</span></div><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => { setModal(''); chooseTab('rewards') }}>Choose later <ArrowUpRight size={14} /></button></>}
         {modal === 'failed' && <><div className="modal-icon failed-modal-icon"><RefreshCw size={20} /></div><p className="eyebrow">A FRESH START IS STILL A START</p><h2>Your streak ended.</h2><p className="modal-description">Your steps have reset, and there’s no reward this time. Choose a new goal and begin again whenever you’re ready.</p><p className="next-goal-label">CHOOSE YOUR NEXT GOAL</p><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => setModal('')}>Maybe later</button></>}
       </section></div>}

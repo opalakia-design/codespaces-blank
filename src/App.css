@@ -51,6 +51,10 @@ button { color: inherit; }
 .breadcrumb > span { font-size: 9px; font-weight: 700; letter-spacing: 1.05px; }
 .breadcrumb strong { color: #fff; font-size: 11px; font-weight: 600; }
 .topbar-actions { gap: 16px; }
+.streak-header-control { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 0 5px; color: #fff; background: transparent; border: 0; border-radius: 0; box-shadow: none; text-align: left; cursor: pointer; }
+.streak-header-control:hover { color: #ffadd1; background: transparent; }
+.streak-header-control > svg { color: #ff83b7; }
+.streak-header-control strong { color: inherit; font-size: 13px; font-weight: 700; }
 .weather-pill { display: flex; align-items: center; gap: 6px; color: #fff; font-size: 12px; font-weight: 700; }
 .weather-pill svg { color: #ffd347; }
 .weather-pill i { color: #cce0d4; font-size: 11px; font-style: normal; font-weight: 400; }
@@ -195,30 +199,30 @@ button { color: inherit; }
 .filter-button { display: inline-flex; align-items: center; gap: 7px; min-height: 35px; padding: 0 10px; color: #617062; background: #fff; border: 1px solid var(--line); border-radius: 4px; font-size: 10px; font-weight: 600; cursor: pointer; }
 .route-list { display: grid; gap: 13px; }
 .route-card { display: grid; grid-template-columns: minmax(190px, .78fr) 1.3fr; min-height: 195px; overflow: hidden; background: white; border: 1px solid var(--line); border-radius: 5px; transition: border-color .2s ease, box-shadow .2s ease; }
-.route-card-selected { border-color: #b4ca9c; box-shadow: 0 0 0 2px #e6efd9; }
+.route-card-selected { border-color: #91c7d2; box-shadow: 0 0 0 2px #dceff2; }
 .route-card-map { position: relative; min-height: 195px; overflow: hidden; background: #e8eee5; }
 .route-map-compact { height: 100%; min-height: 195px; }
-.route-map-compact .route-line { stroke: #648e51; stroke-width: 6; }
+.route-map-compact .route-line { stroke: #248eaa; stroke-width: 6; }
 .route-card-map.map-pink { background: #f4dce8; }
 .route-card-map.map-pink .park { fill: #e8bfd2; }
 .route-card-map.map-blue { background: #e5efee; }
-.route-card-map.map-blue .park { fill: #d3e2d3; }
+.route-card-map.map-blue .park { fill: #bddde5; }
 .route-card-pin { position: absolute; top: 42%; left: 48%; display: grid; width: 30px; height: 30px; place-items: center; color: white; background: #e83e8c; border: 3px solid white; border-radius: 50%; box-shadow: 0 2px 7px #26332625; }
 .route-card-content { display: flex; flex-direction: column; padding: 17px 18px 14px; }
 .route-card-title { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; }
 .route-index { color: #9ca69b; font-size: 8px; font-weight: 700; letter-spacing: 1px; }
 .route-card-title h2 { margin: 5px 0 4px; color: #2d4035; font-family: 'DM Serif Display', Georgia, serif; font-size: 21px; font-weight: 400; }
 .route-card-title p { display: flex; align-items: center; gap: 4px; margin: 0; color: #89948b; font-size: 10px; }
-.selected-tag { display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; color: #647d4d; background: #f0f5e9; border-radius: 3px; font-size: 8px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; }
+.selected-tag { display: inline-flex; align-items: center; gap: 3px; padding: 4px 6px; color: #286d83; background: #e6f2f5; border-radius: 3px; font-size: 8px; font-weight: 700; letter-spacing: .5px; white-space: nowrap; }
 .route-card-stats { display: flex; gap: 17px; padding: 13px 0 11px; margin-top: auto; color: #647268; border-bottom: 1px solid #edf0ea; font-size: 10px; }
 .route-card-stats span { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; }
-.route-card-stats svg { color: #89a558; }
+.route-card-stats svg { color: #278da9; }
 .route-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 10px; }
 .stop-note { display: inline-flex; align-items: center; gap: 4px; color: #78857a; font-size: 9px; }
 .stop-note svg { color: #e83e8c; }
 .route-card-bottom .primary-button, .route-card-bottom .secondary-button { min-height: 31px; padding: 0 9px; font-size: 9px; white-space: nowrap; }
-.route-disclaimer { display: flex; align-items: center; gap: 8px; padding: 13px 14px; margin-top: 16px; color: #708273; background: #edf3e8; border-radius: 4px; font-size: 10px; }
-.route-disclaimer svg { flex: 0 0 auto; color: #719556; }
+.route-disclaimer { display: flex; align-items: center; gap: 8px; padding: 13px 14px; margin-top: 16px; color: #527382; background: #e8f2f5; border-radius: 4px; font-size: 10px; }
+.route-disclaimer svg { flex: 0 0 auto; color: #2786a0; }
 .people-page .subpage-heading { align-items: flex-end; }
 .people-toolbar { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; margin-bottom: 14px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .people-toolbar > span { display: inline-flex; align-items: center; gap: 7px; color: #77837a; font-size: 10px; }
@@ -302,6 +306,52 @@ button { color: inherit; }
 .empty-message-icon { display: grid; width: 45px; height: 45px; place-items: center; margin-bottom: 10px; color: #718e60; background: #eff4e9; border-radius: 50%; }
 .conversation-empty p { margin: 0 0 4px; color: #546457; font-family: 'DM Serif Display', Georgia, serif; font-size: 17px; }
 .conversation-empty > span { color: #9aa39b; font-size: 10px; }
+.chat-thread { display: grid; grid-template-rows: auto minmax(230px, 1fr) auto; min-height: 430px; overflow: hidden; background: #fff; border: 1px solid var(--line); border-radius: 5px; }
+.chat-thread-header { display: flex; align-items: center; gap: 9px; min-height: 62px; padding: 8px 10px; background: #f7faf9; border-bottom: 1px solid var(--line); }
+.chat-back-button { display: grid; width: 31px; height: 31px; flex: 0 0 auto; place-items: center; padding: 0; color: #56707b; background: transparent; border: 0; border-radius: 50%; cursor: pointer; }
+.chat-back-button:hover { background: #e6f0f3; }
+.chat-thread-header > img { width: 36px; height: 36px; flex: 0 0 auto; object-fit: cover; border-radius: 50%; }
+.chat-contact { display: grid; min-width: 0; gap: 3px; }
+.chat-contact strong { color: #254452; font-size: 11px; }
+.chat-contact small { display: flex; align-items: center; gap: 5px; color: #72868d; font-size: 8px; }
+.chat-contact small i { width: 6px; height: 6px; background: #46abc1; border-radius: 50%; }
+.chat-schedule-button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 32px; padding: 0 8px; margin-left: auto; color: #fff; background: #075f7b; border: 0; border-radius: 4px; font-size: 9px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.chat-schedule-button:hover { background: #064b65; }
+.chat-thread-messages { display: flex; flex-direction: column; align-items: flex-start; gap: 10px; overflow-y: auto; padding: 14px 12px; background: #f1f6f7; }
+.chat-message { max-width: 82%; padding: 8px 10px 6px; color: #36515d; background: #fff; border: 1px solid #dce8eb; border-radius: 10px 10px 10px 3px; box-shadow: 0 2px 6px #173a4808; }
+.chat-message p { margin: 0; font-size: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+.chat-message time { display: block; margin-top: 4px; color: #8799a0; font-size: 7px; text-align: right; }
+.chat-message-outgoing { align-self: flex-end; color: #fff; background: #08718b; border-color: #08718b; border-radius: 10px 10px 3px 10px; }
+.chat-message-outgoing time { color: #d3eaf0; }
+.chat-compose { display: flex; align-items: center; gap: 8px; padding: 9px; background: #fff; border-top: 1px solid var(--line); }
+.chat-compose input { width: 100%; min-width: 0; height: 35px; padding: 0 10px; color: #294957; background: #f2f7f8; border: 1px solid #dce8eb; border-radius: 4px; font-size: 10px; outline: none; }
+.chat-compose input:focus { border-color: #53a9bc; box-shadow: 0 0 0 2px #c9e8ee; }
+.chat-compose button { display: grid; width: 35px; height: 35px; flex: 0 0 auto; place-items: center; color: #fff; background: #075f7b; border: 0; border-radius: 4px; cursor: pointer; }
+.chat-compose button:disabled { color: #9caeb3; background: #e5edef; cursor: default; }
+.likes-count-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; color: #b52e6f; background: #ffeaf3; border: 1px solid #f5cadc; border-radius: 4px; font-size: 10px; font-weight: 700; }
+.likes-list { display: grid; gap: 10px; }
+.incoming-like-card { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: 5px; }
+.incoming-like-photo { width: 76px; height: 100%; min-height: 124px; max-height: 150px; object-fit: cover; object-position: center 35%; border-radius: 3px; }
+.incoming-like-info { display: flex; min-width: 0; flex-direction: column; align-items: flex-start; }
+.like-note { display: inline-flex; align-items: center; gap: 4px; color: #d63883; font-size: 8px; font-weight: 700; letter-spacing: .55px; }
+.incoming-like-info h2 { margin: 5px 0 2px; color: #1d4152; font-family: 'DM Serif Display', Georgia, serif; font-size: 20px; font-weight: 400; }
+.incoming-like-info > p { margin: 0; color: #6f858e; font-size: 9px; }
+.incoming-like-info > small { display: -webkit-box; overflow: hidden; margin-top: 6px; color: #617680; font-size: 9px; line-height: 1.4; line-clamp: 2; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+.incoming-like-actions { display: flex; flex-wrap: wrap; gap: 7px; margin-top: auto; padding-top: 8px; }
+.match-back-button, .remove-like-button { display: inline-flex; align-items: center; justify-content: center; gap: 5px; min-height: 30px; padding: 0 9px; border: 0; border-radius: 4px; font-size: 9px; font-weight: 700; cursor: pointer; }
+.match-back-button { color: #fff; background: #d93682; }
+.match-back-button:hover { background: #bf2c70; }
+.remove-like-button { color: #667b84; background: #edf3f4; }
+.remove-like-button:hover { color: #b52e6f; background: #ffeaf3; }
+.likes-empty { display: grid; justify-items: center; padding: 42px 18px; background: #fff; border: 1px solid var(--line); border-radius: 5px; text-align: center; }
+.likes-empty h2 { margin: 0; color: #1d4152; font-family: 'DM Serif Display', Georgia, serif; font-size: 21px; font-weight: 400; }
+.likes-empty p { margin: 6px 0 14px; color: #70858e; font-size: 10px; }
+.discover-switch { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin: -7px 0 16px; background: #e0eef1; border: 1px solid #c9dde2; border-radius: 5px; }
+.discover-switch button { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 34px; padding: 0 9px; color: #426a79; background: transparent; border: 0; border-radius: 3px; font-size: 10px; font-weight: 700; cursor: pointer; }
+.discover-switch button.selected { color: #075f7b; background: #fff; box-shadow: 0 1px 4px #163c4b1a; }
+.discover-switch button > span { display: grid; min-width: 17px; height: 17px; place-items: center; padding: 0 4px; color: #fff; background: #d93682; border-radius: 10px; font-size: 8px; }
+.mobile-nav button { position: relative; min-width: 0; flex: 1; }
+.mobile-like-badge { position: absolute; top: 0; left: calc(50% + 4px); display: grid; width: 14px; height: 14px; place-items: center; color: #fff; background: #d93682; border: 1px solid #fcfdf9; border-radius: 50%; font-size: 8px; font-weight: 700; }
 .lifetime-badge { display: inline-flex; align-items: center; gap: 6px; padding: 8px 10px; color: #718747; background: #edf4e4; border-radius: 3px; font-size: 10px; font-weight: 700; }
 .goal-section { padding: 19px; background: white; border: 1px solid var(--line); border-radius: 5px; }
 .goal-heading { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
@@ -309,8 +359,8 @@ button { color: inherit; }
 .freeze-top-link { display: inline-flex; align-items: center; gap: 5px; padding: 6px 0; color: #7e897f; background: none; border: 0; font-size: 10px; cursor: pointer; }
 .goal-options { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 17px 0; }
 .goal-option { position: relative; display: flex; flex-direction: column; align-items: flex-start; min-height: 143px; padding: 13px; background: #fafbf8; border: 1px solid #e7ebe3; border-radius: 4px; text-align: left; cursor: pointer; transition: background .18s ease, border-color .18s ease; }
-.goal-option:hover { background: #f4f7ed; }
-.goal-selected { background: #f1f6e8; border-color: #9db678; box-shadow: inset 0 0 0 1px #dce8ce; }
+.goal-option:hover { background: #eaf4f6; }
+.goal-selected { background: #e6f3f5; border-color: #85bfcb; box-shadow: inset 0 0 0 1px #d1e9ed; }
 .goal-in-progress .goal-options .goal-option { pointer-events: none; cursor: not-allowed; opacity: .58; }
 .goal-lock-banner { display: flex; align-items: center; gap: 9px; padding: 10px 12px; margin: 20px 0 -12px; color: #647a4c; background: #edf3e6; border: 1px solid #dfe9d4; border-radius: 4px; }
 .goal-lock-banner > svg { flex: 0 0 auto; }
@@ -321,7 +371,7 @@ button { color: inherit; }
 .goal-days { margin-top: 5px; color: #2e4234; font-family: 'DM Serif Display', Georgia, serif; font-size: 26px; line-height: 1; }
 .goal-days small { margin-left: 4px; color: #78857b; font-family: 'DM Sans', sans-serif; font-size: 10px; }
 .goal-label { margin-top: 5px; color: #7e8a7e; font-size: 9px; }
-.goal-bonus { margin-top: auto; padding-top: 12px; color: #577345; font-size: 11px; font-weight: 700; }
+.goal-bonus { margin-top: auto; padding-top: 12px; color: #23778c; font-size: 11px; font-weight: 700; }
 .goal-bonus small { color: #879287; font-size: 8px; font-weight: 500; }
 .goal-check { position: absolute; top: 9px; right: 9px; display: grid; width: 18px; height: 18px; place-items: center; color: white; background: #6a8c4e; border-radius: 50%; }
 .goal-progress-panel { display: flex; align-items: center; justify-content: space-between; gap: 25px; padding: 15px; background: #fbfcf8; border: 1px solid #edf0e9; border-radius: 4px; }
@@ -472,11 +522,31 @@ button { color: inherit; }
   .breadcrumb > span, .breadcrumb > svg { display: none; }
   .topbar-actions { gap: 9px; }
   .weather-pill i { display: none; }
+  .today-dashboard { grid-template-columns: minmax(0, 1fr); }
+  .today-dashboard .dashboard-rail { display: none; }
   .welcome-row { align-items: flex-start; flex-direction: column; gap: 17px; padding: 26px 0 18px; }
+  .streak-modal-icon { color: #c52f77; background: #ffeaf3; }
+  .streak-modal-progress { padding: 11px; margin-top: 15px; background: #edf5f6; border: 1px solid #d5e7ea; border-radius: 4px; }
+  .streak-modal-progress .progress-caption { margin: 0 0 7px; }
+  .streak-modal-reward { display: flex; align-items: center; gap: 6px; margin-top: 10px; color: #26758d; font-size: 10px; font-weight: 700; }
   .welcome-row h1, .subpage-heading h1 { font-size: 36px; }
   .welcome-copy { font-size: 12px; }
   .alarm-button { align-self: stretch; justify-content: center; }
+  .night-mode .streak-header-control small { color: #d5edf3; }
+  .night-mode .profile-form label,
+  .night-mode .schedule-form label,
+  .night-mode .optional-label,
+  .night-mode .route-stats strong,
+  .night-mode .sponsor-stop strong,
+  .night-mode .goal-label,
+  .night-mode .goal-bonus,
+  .night-mode .goal-check { color: #edf7fb; }
+  .night-mode .route-card-title p,
+  .night-mode .route-index,
+  .night-mode .goal-picker button > span { color: #c4dbe3; }
   .dashboard-grid { grid-template-columns: 1fr; }
+  .night-mode .streak-modal-progress { background: #29485d; border-color: #456477; }
+  .night-mode .streak-modal-reward { color: #86deeb; }
   .route-heading { padding: 15px 14px 12px; }
   .route-heading h2 { font-size: 21px; }
   .route-heading .text-button { font-size: 9px; }
@@ -651,19 +721,20 @@ button { color: inherit; }
 .theme-toggle { border: 1px solid #ffffff55; }
 .theme-toggle:hover { color: #ffe070; }
 .night-mode {
-  --ink: #eaf3e9;
-  --muted: #a4b9ad;
-  --line: #314b40;
-  --paper: #172a23;
-  --canvas: #0c1915;
-  --deep-green: #061d1a;
+  --ink: #edf7fb;
+  --muted: #b4cbd5;
+  --line: #456477;
+  --paper: #253f52;
+  --canvas: #142b3c;
+  --green: #71e1ed;
+  --deep-green: #0b4e6a;
   color: var(--ink);
   background: var(--canvas);
 }
-body:has(.app-shell.night-mode) { background: #07120f; }
+body:has(.app-shell.night-mode) { background: #102437; }
 .night-mode .theme-toggle { color: #ffe071; background: #ffffff10; border-color: #698176; }
 .night-mode .theme-toggle:hover { background: #ffffff20; }
-.night-mode .topbar { background: #051816; }
+.night-mode .topbar { background: #0a4059; }
 .night-mode .sidebar,
 .night-mode .panel,
 .night-mode .offer-card,
@@ -681,14 +752,14 @@ body:has(.app-shell.night-mode) { background: #07120f; }
 .night-mode .modal-card { color: var(--ink); background: var(--paper); border-color: var(--line); }
 .night-mode .city-switch,
 .night-mode .nav-link:hover,
-.night-mode .profile-shortcut:hover { color: #dcebdc; background: #203a30; border-color: #365447; }
-.night-mode .nav-link { color: #afc1b6; }
-.night-mode .nav-link.active { color: #173a2d; background: var(--green); }
-.night-mode .nav-link.active::before { background: #8eba24; }
+.night-mode .profile-shortcut:hover { color: #e1f1f5; background: #2a4a5e; border-color: #537287; }
+.night-mode .nav-link { color: #c1d2d9; }
+.night-mode .nav-link.active { color: #153d50; background: var(--green); }
+.night-mode .nav-link.active::before { background: #1d9ab4; }
 .night-mode .nav-caption,
 .night-mode .section-label,
 .night-mode .eyebrow,
-.night-mode .offer-category { color: #9db2a4; }
+.night-mode .offer-category { color: #b2c8d1; }
 .night-mode .welcome-row h1,
 .night-mode .subpage-heading h1,
 .night-mode .route-heading h2,
@@ -707,10 +778,10 @@ body:has(.app-shell.night-mode) { background: #07120f; }
 .night-mode .reward-peek strong,
 .night-mode .offer-copy > strong,
 .night-mode .reward-offer-copy strong,
-.night-mode .modal-card h2 { color: #eff7eb; }
+.night-mode .modal-card h2 { color: #f0f8fb; }
 .night-mode .welcome-row h1 em,
 .night-mode .subpage-heading h1 em,
-.night-mode .modal-card h2 em { color: #d6f548; }
+.night-mode .modal-card h2 em { color: #62d9e7; }
 .night-mode .welcome-copy,
 .night-mode .subpage-heading > div > p:last-child,
 .night-mode .route-area,
@@ -723,6 +794,8 @@ body:has(.app-shell.night-mode) { background: #07120f; }
 .night-mode .person-detail,
 .night-mode .person-bio,
 .night-mode .conversation-row small,
+.night-mode .chat-contact small,
+.night-mode .chat-message time,
 .night-mode .conversation-time,
 .night-mode .matches-heading > span,
 .night-mode .goal-progress-main,
@@ -731,7 +804,7 @@ body:has(.app-shell.night-mode) { background: #07120f; }
 .night-mode .offer-copy p,
 .night-mode .reward-offer-copy small,
 .night-mode .profile-side > p,
-.night-mode .swipe-empty p { color: #a2b5a8; }
+.night-mode .swipe-empty p { color: #b4c8d1; }
 .night-mode .route-map,
 .night-mode .route-card-map,
 .night-mode .profile-form input,
@@ -740,96 +813,130 @@ body:has(.app-shell.night-mode) { background: #07120f; }
 .night-mode .schedule-form select,
 .night-mode .freeze-options button,
 .night-mode .conversation-list-header,
-.night-mode .conversation-row:hover { background-color: #1d332a; border-color: #355144; }
-.night-mode .route-map svg > rect:first-child { fill: #10251f; }
-.night-mode .city-blocks path { fill: #1a3328; stroke: #284337; }
-.night-mode .park { fill: #294d31; }
-.night-mode .water { stroke: #163d40; }
-.night-mode .street-lines path { stroke: #294036; }
-.night-mode .route-shadow { stroke: #10251f; }
-.night-mode .route-line { stroke: #d6f548; }
-.night-mode .map-label { color: #a0b7a3; }
-.night-mode .map-label-3 { color: #bed495; }
+.night-mode .conversation-row:hover { background-color: #29485d; border-color: #456478; }
+.night-mode .chat-thread { background: #253f52; border-color: #456477; }
+.night-mode .chat-thread-header,
+.night-mode .chat-compose { background: #213b4f; border-color: #456477; }
+.night-mode .chat-back-button { color: #c8dce2; }
+.night-mode .chat-back-button:hover { background: #35566a; }
+.night-mode .chat-contact strong { color: #eff8fb; }
+.night-mode .chat-thread-messages { background: #1c3446; }
+.night-mode .chat-message { color: #e4f0f4; background: #2b4a60; border-color: #466579; }
+.night-mode .chat-message-outgoing { color: #fff; background: #08718b; border-color: #2091a8; }
+.night-mode .chat-message-outgoing time { color: #d4eff3; }
+.night-mode .chat-compose input { color: #eff7fa; background: #2a485c; border-color: #4b6879; }
+.night-mode .chat-compose button:disabled { color: #a4bbc4; background: #385467; }
+.night-mode .likes-count-badge { color: #ffadd1; background: #482a3d; border-color: #70405b; }
+.night-mode .discover-switch { background: #213e50; border-color: #456477; }
+.night-mode .discover-switch button { color: #bfd5dd; }
+.night-mode .discover-switch button.selected { color: #103f56; background: #a7e6ed; }
+.night-mode .incoming-like-card,
+.night-mode .likes-empty { background: #253f52; border-color: #456477; }
+.night-mode .incoming-like-info h2,
+.night-mode .likes-empty h2 { color: #f0f8fb; }
+.night-mode .incoming-like-info > p,
+.night-mode .incoming-like-info > small,
+.night-mode .likes-empty p { color: #c0d3da; }
+.night-mode .remove-like-button { color: #d4e4e9; background: #355165; }
+.night-mode .remove-like-button:hover { color: #ffadd1; background: #482a3d; }
+.night-mode .mobile-like-badge { border-color: #142b3c; }
+.night-mode .route-map svg > rect:first-child { fill: #183547; }
+.night-mode .city-blocks path { fill: #26475a; stroke: #36586a; }
+.night-mode .park { fill: #315568; }
+.night-mode .water { stroke: #255369; }
+.night-mode .street-lines path { stroke: #39586a; }
+.night-mode .route-shadow { stroke: #183547; }
+.night-mode .route-line { stroke: #62d9e7; }
+.night-mode .map-label { color: #a0bbc5; }
+.night-mode .map-label-3 { color: #b4dce4; }
 .night-mode .map-caption { color: #e1ecd9; }
-.night-mode .route-card-selected { border-color: #8cae48; box-shadow: 0 0 0 2px #d6f54830; }
+.night-mode .route-card-selected { border-color: #4aa9bc; box-shadow: 0 0 0 2px #62d9e730; }
 .night-mode .route-card-stats,
 .night-mode .route-card-stats span,
-.night-mode .stop-note { color: #c1d0c3; }
+.night-mode .stop-note { color: #c8dce2; }
 .night-mode .route-meta,
 .night-mode .reward-peek,
 .night-mode .freeze-link,
 .night-mode .route-card-stats,
-.night-mode .conversation-row { border-color: #314b40; }
+.night-mode .conversation-row { border-color: #456477; }
 .night-mode .sponsor-stop,
 .night-mode .goal-progress-panel,
 .night-mode .goal-option,
 .night-mode .profile-form input,
 .night-mode .profile-form textarea,
 .night-mode .schedule-form input,
-.night-mode .schedule-form select { color: #eaf3e9; background: #20382e; border-color: #3a5547; }
+.night-mode .schedule-form select { color: #edf7fb; background: #2a485c; border-color: #4b6879; }
 .night-mode .goal-selected,
-.night-mode .goal-option:hover { background: #38512d; border-color: #a4cf42; }
+.night-mode .goal-option:hover { background: #204252; border-color: #3ba9bf; }
 .night-mode .goal-in-progress .goal-options .goal-option { opacity: .46; }
 .night-mode .goal-lock-banner,
-.night-mode .route-disclaimer { color: #d6f0a2; background: #243d2c; border-color: #3b5940; }
+.night-mode .route-disclaimer { color: #bdebf1; background: #1e3a47; border-color: #365766; }
 .night-mode .goal-lock-banner strong,
-.night-mode .goal-lock-banner small { color: #d6e8c1; }
+.night-mode .goal-lock-banner small { color: #e0f2f6; }
 .night-mode .reward-peek small,
 .night-mode .progress-caption,
-.night-mode .offer-status { color: #b6c8b7; }
-.night-mode .progress-track { background: #30463a; }
-.night-mode .progress-track > span { background: #d6f548; }
+.night-mode .offer-status { color: #c0d3da; }
+.night-mode .progress-track { background: #3b5667; }
+.night-mode .progress-track > span { background: #62d9e7; }
 .night-mode .reward-star,
 .night-mode .today-chip,
 .night-mode .offer-tag,
 .night-mode .selected-tag,
-.night-mode .interest-list span { color: #e4f2c8; background: #32432a; }
+.night-mode .interest-list span { color: #d1edf1; background: #2a4350; }
 .night-mode .streak-flame { color: #ff7db8; background: #48263a; }
 .night-mode .secondary-button,
-.night-mode .filter-button { color: #d9efb2; background: #263d31; border-color: #405b48; }
-.night-mode .secondary-button:hover { background: #314d3a; }
+.night-mode .filter-button { color: #d9eff4; background: #2a4659; border-color: #4c687a; }
+.night-mode .secondary-button:hover { background: #36566b; }
 .night-mode .freeze-link,
 .night-mode .freeze-top-link,
 .night-mode .add-steps-button,
 .night-mode .buddy-link,
-.night-mode .text-button { color: #c6e98b; }
+.night-mode .text-button { color: #8de0eb; }
 .night-mode .people-toolbar,
-.night-mode .site-footer { color: #9fb3a5; border-color: #314b40; }
+.night-mode .site-footer { color: #b2c8d1; border-color: #456477; }
 .night-mode .pass-button,
 .night-mode .like-button,
-.night-mode .swipe-actions button > svg { background: #21382e; border-color: #3d5848; }
-.night-mode .swipe-actions button { color: #c1d0c4; }
+.night-mode .swipe-actions button > svg { background: #29485d; border-color: #4b6879; }
+.night-mode .swipe-actions button { color: #d0e0e5; }
 .night-mode .swipe-distance,
 .night-mode .swipe-online { color: #f0f7e9; background: #10241ee8; border-color: #476253; }
-.night-mode .profile-interests > span { color: #e0edcf; background: #2c4433; }
-.night-mode .privacy-note { color: #d6f548; background: #20382b; }
+.night-mode .profile-interests > span { color: #e1f0f4; background: #315064; }
+.night-mode .privacy-note { color: #71e1ed; background: #29485b; }
 .night-mode .privacy-note strong,
-.night-mode .privacy-note small { color: #d7e8ce; }
-.night-mode .freeze-options button { color: #e4eee2; }
-.night-mode .freeze-options button.selected { background: #344a31; border-color: #a4cf42; }
-.night-mode .reason-dot { border-color: #758b79; }
+.night-mode .privacy-note small { color: #d8eaf0; }
+.night-mode .freeze-options button { color: #edf6f8; }
+.night-mode .freeze-options button.selected { background: #294555; border-color: #47b1c2; }
+.night-mode .reason-dot { border-color: #91aab5; }
 .night-mode .modal-description,
 .night-mode .modal-footnote { color: #b2c2b5; }
-.night-mode .modal-close { color: #dbe8dc; background: #263d32; }
-.night-mode .freeze-feedback { color: #e0f0c4; background: #2b452d; }
+.night-mode .modal-close { color: #e1f1f5; background: #2a4659; }
+.night-mode .freeze-feedback { color: #dbf2f5; background: #2a4a5e; }
 .night-mode .freeze-error { color: #ffb5a6; background: #492a27; }
 .night-mode .alarm-banner { background: #392332; border-color: #653a53; }
 .night-mode .alarm-banner strong { color: #ffe8f1; }
 .night-mode .alarm-banner small,
 .night-mode .alarm-banner button { color: #edbed4; }
 .night-mode .goal-picker button,
-.night-mode .bonus-stamp { color: #e2f1cc; background: #253d2d; border-color: #58744a; }
+.night-mode .bonus-stamp { color: #d7eff3; background: #243d49; border-color: #4d7180; }
 .night-mode .goal-picker strong,
 .night-mode .bonus-stamp strong { color: #eff7de; }
 .night-mode .goal-picker button > span,
-.night-mode .bonus-stamp span { color: #c3d6b2; }
+.night-mode .bonus-stamp span { color: #bedce4; }
 .night-mode .site-footer > span:first-child,
 .night-mode .site-footer small { color: #c6d4c8; }
 .night-mode .toast-message { color: #f4f8ef; background: #235d4a; }
-.night-mode .mobile-nav { background: #10241ff5; border-color: #314b40; }
+.night-mode .mobile-nav { background: #1b3447f5; border-color: #456477; }
 .night-mode .mobile-nav button { color: #a5b8aa; }
-.night-mode .mobile-nav button.active { color: #d6f548; }
+.night-mode .mobile-nav button.active { color: #62d9e7; }
 .night-mode .profile-cover { filter: brightness(.78) saturate(1.15); }
+
+@media (max-width: 680px) {
+  .mobile-nav button { min-width: 0; }
+}
+
+@media (min-width: 681px) {
+  .mobile-nav button { min-width: 0; }
+}
 
 @media (min-width: 681px) {
   .night-mode.app-shell { border-color: #263d33; box-shadow: 0 18px 70px #00000066; }
