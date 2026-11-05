@@ -1076,6 +1076,28 @@ body:has(.app-shell.night-mode) { background: #102437; }
   .night-mode.app-shell { border-color: #263d33; box-shadow: 0 18px 70px #00000066; }
   .night-mode .mobile-nav { background: #10241ff5; }
 }
+
+.sponsor-gifts-section { padding-top: 0; }
+.sponsor-gifts-section .offers-title { margin-bottom: 11px; }
+.sponsor-milestone-panel { display: grid; gap: 12px; padding: 14px; background: #f7faf8; border: 1px solid var(--line); border-radius: 4px; }
+.sponsor-milestone-panel p { margin: 7px 0 0; color: #72878e; font-size: 10px; }
+.sponsor-milestone-panel p strong { color: #176f8c; font-size: 13px; }
+.sponsor-milestone-panel .progress-track > span { background: #d99a31; }
+.unlocked-gift-list { display: grid; gap: 7px; margin-top: 10px; }
+.unlocked-gift { display: flex; align-items: center; gap: 9px; padding: 10px; background: #fff; border: 1px solid var(--line); border-radius: 4px; }
+.unlocked-gift > span:nth-child(2) { display: grid; gap: 3px; }
+.unlocked-gift strong { color: #234f60; font-family: 'DM Serif Display', Georgia, serif; font-size: 14px; font-weight: 400; }
+.unlocked-gift small { color: #72878e; font-size: 9px; }
+.unlocked-gift > svg { margin-left: auto; color: #18866b; }
+.gift-unlock-message { padding: 8px 9px; margin: 8px 0; color: #286d83; background: #eaf5f6; border-radius: 3px; font-size: 10px; line-height: 1.45; }
+.night-mode .sponsor-milestone-panel,
+.night-mode .unlocked-gift { color: var(--ink); background: var(--paper); border-color: var(--line); }
+.night-mode .sponsor-milestone-panel p,
+.night-mode .unlocked-gift small { color: #bfd1d8; }
+.night-mode .sponsor-milestone-panel p strong,
+.night-mode .unlocked-gift strong { color: #e3f1f5; }
+.night-mode .gift-unlock-message { color: #d4eff5; background: #294d60; }
+
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Serif+Display:ital@0;1&display=swap');
 
 .app-shell {
@@ -1913,3 +1935,270 @@ body:has(.app-shell.night-mode) { background: #07120f; }
   .night-mode.app-shell { border-color: #263d33; box-shadow: 0 18px 70px #00000066; }
   .night-mode .mobile-nav { background: #10241ff5; }
 }
+
+.app-shell {
+  --ink: #153b54;
+  --muted: #58788e;
+  --line: #c0dce9;
+  --canvas: #edf6fb;
+  --green: #00b8ee;
+  --deep-green: #006da2;
+}
+.app-shell .nav-link.active { color: #18415a; background: #dceff7; }
+.app-shell .nav-link.active::before { background: #168db9; }
+.app-shell .city-switch { color: #315d73; background: #e6f3f9; border-color: #cee3ed; }
+.app-shell .city-dot,
+.app-shell .online-dot { background: #399bc5; }
+.app-shell .profile-shortcut.active { background: #e5f2f8; }
+.app-shell .welcome-row h1 em,
+.app-shell .subpage-heading h1 em,
+.app-shell .modal-card h2 em { color: var(--coral); }
+.app-shell .section-marker { background: #249cc4; }
+.app-shell .route-map,
+.app-shell .route-card-map { background: #e6f0f5; }
+.app-shell .city-blocks path { fill: #d5e5ee; stroke: #f2f7fa; }
+.app-shell .park { fill: #b9dbe8; }
+.app-shell .water { stroke: #9bd4e7; }
+.app-shell .route-line,
+.app-shell .route-map-circular .route-line,
+.app-shell .route-map-compact .route-line,
+.app-shell .route-map-one-way .route-line { stroke: #087da7; }
+.app-shell .map-label-3 { color: #658ba0; }
+.app-shell .route-progress-panel { background: #e8f3f8; border-color: #d2e4ed; }
+.app-shell .progress-track { background: #e6eef3; }
+.app-shell .progress-track > span { background: #1b9cc9; }
+.app-shell .goal-lock-banner { color: #346780; background: #e9f4f9; border-color: #d3e6ef; }
+.app-shell .goal-lock-banner strong { color: #315f78; }
+.app-shell .goal-lock-banner small { color: #68899b; }
+.app-shell .goal-selected { background: #e7f3f9; border-color: #8cbcd0; }
+.app-shell .goal-bonus,
+.app-shell .goal-progress-right p strong { color: #287292; }
+.app-shell .goal-check { background: #208db5; }
+.app-shell .lifetime-badge { color: #286d8b; background: #e7f2f8; }
+.app-shell .status-locked { color: #426d83; background: #e9f3f8; }
+.app-shell .profile-cover { background: linear-gradient(110deg, #507f99, #83b9cd 58%, #e7bc83); }
+.night-mode.app-shell {
+  --ink: #eaf5fb;
+  --muted: #afc7d4;
+  --line: #304c5d;
+  --paper: #172a37;
+  --canvas: #0c1923;
+  --green: #54c3eb;
+  --deep-green: #08283b;
+}
+body:has(.app-shell.night-mode) { background: #091722; }
+.night-mode .topbar { background: #082c42; }
+.night-mode .nav-link.active { color: #173b51; background: #54c3eb; }
+.night-mode .nav-link.active::before { background: #38b2df; }
+.night-mode .welcome-row h1 em,
+.night-mode .subpage-heading h1 em,
+.night-mode .modal-card h2 em { color: var(--coral); }
+.night-mode .route-map,
+.night-mode .route-card-map { background: #142d3c; }
+.night-mode .route-map svg > rect:first-child { fill: #102532; }
+.night-mode .city-blocks path { fill: #1c394b; stroke: #29495c; }
+.night-mode .park { fill: #22506a; }
+.night-mode .water { stroke: #19415a; }
+.night-mode .street-lines path { stroke: #294251; }
+.night-mode .route-shadow { stroke: #102532; }
+.night-mode .route-line,
+.night-mode .route-map-circular .route-line,
+.night-mode .route-map-compact .route-line,
+.night-mode .route-map-one-way .route-line { stroke: #54c3eb; }
+.night-mode .progress-track { background: #304859; }
+.night-mode .progress-track > span { background: #54c3eb; }
+.night-mode .goal-selected,
+.night-mode .goal-option:hover { background: #23465b; border-color: #5daecc; }
+.night-mode .goal-lock-banner,
+.night-mode .route-disclaimer { color: #d5edf7; background: #203d50; border-color: #38586c; }
+.night-mode .goal-lock-banner strong,
+.night-mode .goal-lock-banner small { color: #d5edf7; }
+.night-mode .secondary-button,
+.night-mode .filter-button { color: #d1eaf5; background: #203b4d; border-color: #3b5a6d; }
+.night-mode .secondary-button:hover { background: #2a4b60; }
+.night-mode .freeze-link,
+.night-mode .freeze-top-link,
+.night-mode .add-steps-button,
+.night-mode .buddy-link,
+.night-mode .text-button { color: #79cdec; }
+.night-mode .reward-star,
+.night-mode .today-chip,
+.night-mode .offer-tag,
+.night-mode .selected-tag,
+.night-mode .interest-list span { color: #d4eff8; background: #29495d; }
+.night-mode .privacy-note { color: #73cbea; background: #203c4f; }
+.night-mode .privacy-note strong,
+.night-mode .privacy-note small { color: #d0e7f0; }
+.night-mode .freeze-options button.selected { background: #28495d; border-color: #5ca9c8; }
+
+.app-shell .nav-link:hover,
+.app-shell .profile-shortcut:hover { background: #eff7fb; }
+.app-shell .primary-button { background: #075f7b; }
+.app-shell .primary-button:hover { background: #064b65; }
+.app-shell .secondary-button { color: #286175; background: #f1f7f8; border-color: #d4e5e9; }
+.app-shell .secondary-button:hover { background: #e4f1f4; }
+.app-shell .route-stats svg,
+.app-shell .route-card-stats svg { color: #278daf; }
+.app-shell .offer-tag { color: #286d83; background: #e6f2f5; }
+.app-shell .today-chip { color: #47758b; background: #e8f3f8; }
+.app-shell .add-steps-button,
+.app-shell .buddy-link,
+.app-shell .freeze-top-link { color: #176f96; }
+.app-shell .freeze-link:hover { color: #315f78; }
+.app-shell .goal-option:hover { background: #eff7fb; }
+.app-shell .goal-progress-panel { background: #f5fafc; border-color: #deebf1; }
+.app-shell .route-card-selected { border-color: #91c7d2; box-shadow: 0 0 0 2px #dceff2; }
+.app-shell .route-map-compact .route-line { stroke: #248eaa; }
+.app-shell .route-card-map.map-blue .park { fill: #bddde5; }
+.app-shell .route-disclaimer { color: #527382; background: #e8f2f5; }
+.app-shell .route-disclaimer svg { color: #2786a0; }
+.app-shell .offer-arrow { color: #286d83; background: #e6f2f5; }
+.app-shell .schedule-button { color: #286175; background: #f1f7f8; border-color: #d4e5e9; }
+.app-shell .schedule-button:hover { background: #e4f1f4; }
+.app-shell .interest-list span,
+.app-shell .profile-interests > span { color: #526e80; background: #edf5f9; }
+.app-shell .empty-message-icon { color: #287292; background: #e7f2f8; }
+.night-mode .primary-button { background: #0a7199; }
+.night-mode .primary-button:hover { background: #075b7d; }
+.night-mode .today-chip,
+.night-mode .offer-tag,
+.night-mode .interest-list span { color: #d4eff8; background: #29495d; }
+.night-mode .add-steps-button,
+.night-mode .buddy-link,
+.night-mode .freeze-top-link,
+.night-mode .text-button { color: #79cdec; }
+.night-mode .schedule-button { color: #d1eaf5; background: #203b4d; border-color: #3b5a6d; }
+.night-mode .profile-interests > span { color: #d4eff8; background: #29495d; }
+.app-shell .nav-link.home-nav { color: #b52e6f; background: #fff0f6; }
+.app-shell .nav-link.home-nav:hover { color: #9c245d; background: #fce2ed; }
+.app-shell .nav-link.home-nav.active { color: #9c245d; background: #f9dce8; }
+.app-shell .nav-link.home-nav.active::before { background: #e83e8c; }
+.app-shell .mobile-nav button.home-nav { color: #d82c79; }
+.app-shell .mobile-nav button.home-nav.active { color: #b52e6f; }
+.app-shell .mobile-nav button.home-nav.active svg { color: #e83e8c; }
+.night-mode .nav-link.home-nav { color: #ffadd1; background: #3c2634; }
+.night-mode .nav-link.home-nav:hover { background: #482a3d; }
+.night-mode .nav-link.home-nav.active { color: #ffe8f1; background: #5a2c46; }
+.night-mode .nav-link.home-nav.active::before { background: #ff83b7; }
+.night-mode .mobile-nav button.home-nav,
+.night-mode .mobile-nav button.home-nav.active { color: #ff83b7; }
+.unlocked-gift { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; align-items: start; }
+.unlocked-gift-copy { display: grid; min-width: 0; gap: 8px; }
+.unlocked-gift-copy > span,
+.gift-claim-details > span { display: grid; gap: 3px; }
+.gift-claim-details { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 12px; }
+.gift-claim-details small { color: #7c929e; font-size: 8px; font-weight: 700; letter-spacing: .5px; }
+.gift-claim-details code,
+.gift-claim-details time { color: #315d73; font-family: 'DM Sans', sans-serif; font-size: 10px; font-weight: 600; }
+.gift-redeem-button { display: inline-flex; min-height: 30px; align-items: center; justify-content: center; gap: 5px; padding: 0 8px; color: #176f96; background: #eaf5fa; border: 1px solid #c9e0eb; border-radius: 4px; font-size: 9px; font-weight: 700; white-space: nowrap; cursor: pointer; }
+.gift-redeem-button:disabled { color: #315d73; background: #d7ecf5; border-color: #a9ccdb; cursor: default; }
+.unlocked-gift-redeemed { background: #eaf5fa; border-color: #a9ccdb; }
+.unlocked-gift-redeemed .reward-star { color: #176f96; background: #d7ecf5; }
+.night-mode .gift-claim-details small { color: #a9c5d3; }
+.night-mode .gift-claim-details code,
+.night-mode .gift-claim-details time { color: #d5edf7; }
+.night-mode .gift-redeem-button { color: #bce7f5; background: #203d50; border-color: #426d83; }
+.night-mode .gift-redeem-button:disabled,
+.night-mode .unlocked-gift-redeemed { color: #d5edf7; background: #23465b; border-color: #4a7892; }
+.night-mode .unlocked-gift-redeemed .reward-star { color: #d5edf7; background: #315d73; }
+@media (max-width: 680px) {
+  .unlocked-gift { grid-template-columns: 28px minmax(0, 1fr); }
+  .gift-claim-details { grid-template-columns: minmax(0, 1fr); gap: 7px; }
+  .gift-redeem-button { grid-column: 2; justify-self: start; }
+}
+.app-shell .mobile-nav button,
+.app-shell .mobile-nav button.home-nav:not(.active) { color: #78858f; }
+.app-shell .mobile-nav button.active { color: #b52e6f; }
+.app-shell .mobile-nav button.active svg { color: #e83e8c; }
+.night-mode.app-shell .mobile-nav button,
+.night-mode.app-shell .mobile-nav button.home-nav:not(.active) { color: #a4b2bc; }
+.night-mode.app-shell .mobile-nav button.active { color: #ffadd1; }
+.night-mode.app-shell .mobile-nav button.active svg { color: #ff83b7; }
+.app-shell .primary-button { background: var(--coral); }
+.app-shell .primary-button:hover { background: #c42f75; }
+.night-mode .primary-button { background: var(--coral); }
+.night-mode .primary-button:hover { background: #c42f75; }
+.night-mode.app-shell { --muted: #c0d1db; }
+.night-mode :is(
+  .nav-caption,
+  .section-label,
+  .eyebrow,
+  .offer-category,
+  .welcome-copy,
+  .subpage-heading > div > p:last-child,
+  .route-area,
+  .route-stats > span,
+  .route-stats small,
+  .streak-top p,
+  .streak-count span,
+  .steps-number span,
+  .steps-foot,
+  .person-detail,
+  .person-bio,
+  .conversation-row small,
+  .conversation-time,
+  .chat-contact small,
+  .chat-message time,
+  .matches-heading > span,
+  .goal-progress-main,
+  .goal-progress-right p,
+  .reset-note,
+  .offer-copy p,
+  .reward-offer-copy small,
+  .profile-side > p,
+  .swipe-empty p,
+  .route-card-title p,
+  .route-index,
+  .route-card-stats,
+  .stop-note,
+  .people-toolbar > span,
+  .match-footnote,
+  .swipe-hint,
+  .progress-caption,
+  .goal-days small,
+  .goal-label,
+  .goal-bonus small,
+  .site-footer,
+  .site-footer small,
+  .reward-count-label,
+  .extra-rewards-note,
+  .gift-claim-details small
+) { color: #c6d9e3; }
+.night-mode .nav-link:not(.active):not(.home-nav) { color: #d2e0e7; }
+.night-mode.app-shell .mobile-nav button:not(.active) { color: #c5d6df; }
+.route-mode-toggle { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 11px 13px; margin: -10px 0 16px; background: #e6f3f9; border: 1px solid #cee3ed; border-radius: 4px; }
+.route-mode-toggle > span { display: flex; align-items: center; gap: 9px; color: #087ba8; }
+.route-mode-toggle > span > span { display: grid; gap: 2px; }
+.route-mode-toggle strong { color: #174e67; font-size: 11px; }
+.route-mode-toggle small { color: #587b8d; font-size: 9px; }
+.night-mode .route-mode-toggle { background: #203d50; border-color: #3b5d71; }
+.night-mode .route-mode-toggle > span { color: #65c9f0; }
+.night-mode .route-mode-toggle strong,
+.night-mode .route-mode-toggle small { color: #d5edf7; }
+.app-shell .nav-link.active { color: #124865; background: #d6effb; }
+.app-shell .nav-link.active::before { background: #008fc8; }
+.app-shell .section-marker { background: #008fc8; }
+.app-shell .route-line,
+.app-shell .route-map-circular .route-line,
+.app-shell .route-map-compact .route-line,
+.app-shell .route-map-one-way .route-line { stroke: #008fc8; }
+.app-shell .progress-track > span { background: #008fcf; }
+.app-shell .text-button,
+.app-shell .add-steps-button,
+.app-shell .buddy-link,
+.app-shell .freeze-top-link { color: #087da9; }
+.app-shell .route-stats svg,
+.app-shell .route-card-stats svg { color: #008fc8; }
+.app-shell .route-disclaimer svg { color: #008fc8; }
+.night-mode .nav-link.active { color: #123b54; background: #00b8ee; }
+.night-mode .nav-link.active::before { background: #00b8ee; }
+.night-mode .route-line,
+.night-mode .route-map-circular .route-line,
+.night-mode .route-map-compact .route-line,
+.night-mode .route-map-one-way .route-line { stroke: #00b8ee; }
+.night-mode .progress-track > span { background: #00b8ee; }
+.night-mode .section-marker { background: #00b8ee; }
+.night-mode .text-button,
+.night-mode .add-steps-button,
+.night-mode .buddy-link,
+.night-mode .freeze-top-link { color: #32c2f2; }

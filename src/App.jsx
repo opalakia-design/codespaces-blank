@@ -11,6 +11,7 @@ import {
   Compass,
   Flame,
   Frown,
+  Gift,
   Heart,
   MapPin,
   MessageCircle,
@@ -94,6 +95,18 @@ const extraRewards = [
   { brand: 'Nolan', offer: 'A set lunch for two', note: 'Celebrate your walking ritual', image: 'photo-1559339352-11d035aa65de', milestone: 50, category: '50-DAY STREAK' },
 ]
 
+const SPONSOR_GIFT_STEP_INTERVAL = 20000
+const SPONSOR_GIFT_VALIDITY_DAYS = 30
+const sponsorGifts = [
+  { name: 'Premium athletic socks', sponsor: 'Kínesi walking partners' },
+  { name: 'Insulated walking thermos', sponsor: 'Kínesi walking partners' },
+  { name: 'A sponsor meal for two', sponsor: 'Athens local partners' },
+]
+
+function formatGiftExpiration(expiresAt) {
+  return new Date(expiresAt).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
 const navItems = [
   { id: 'people', label: 'Discover', icon: Users },
   { id: 'routes', label: 'Routes', icon: Navigation },
@@ -168,6 +181,9 @@ function App() {
   const [streak, setStreak] = useState(6)
   const [lastStreakTripAt, setLastStreakTripAt] = useState(null)
   const [lifetimeSteps, setLifetimeSteps] = useState(24800)
+  const [unlockedGifts, setUnlockedGifts] = useState([])
+  const [pendingCarrySteps, setPendingCarrySteps] = useState(0)
+  const [goalCompletion, setGoalCompletion] = useState(null)
   const [freezePasses, setFreezePasses] = useState({
     'Illness or injury': 3,
     'Rest day': 3,
@@ -213,6 +229,9 @@ function App() {
   const currentPerson = discoverPeople[personIndex]
   const currentChat = chatItems.find((chat) => chat.name === activeChat)
   const rewardSteps = goal === 10 ? 15000 : goal === 30 ? 55000 : 95000
+  const stepsTowardNextGift = goalSteps % SPONSOR_GIFT_STEP_INTERVAL
+  const stepsUntilNextGift = SPONSOR_GIFT_STEP_INTERVAL - stepsTowardNextGift
+  const nextSponsorGift = sponsorGifts[unlockedGifts.length % sponsorGifts.length]
   const progress = Math.min(100, Math.round((streak / goal) * 100))
   const socialLocked = ['people', 'likes', 'messages'].includes(activeTab) && ageAccess !== 'verified'
 
@@ -235,6 +254,21 @@ function App() {
       return
     }
     setGoalValue(nextGoal)
+    setLastStreakTripAt(null)
+  }
+
+  function failGoal() {
+    setStreak(0)
+    setLastStreakTripAt(null)
+    setGoalSteps(0)
+    setPendingCarrySteps(0)
+    setGoalCompletion(null)
+    setModal('failed')
+  }
+
+  function closeModal() {
+    if (modal === 'reward') setPendingCarrySteps(0)
+    setModal('')
   }
 
   function completeWalk() {
@@ -254,6 +288,25 @@ function App() {
     const newStreak = streak + 1
     setLastStreakTripAt(now)
     if (newStreak >= goal) {
+      const completedGoalSteps = goalSteps + routeSteps + rewardSteps
+      const giftsToUnlock = Math.floor(completedGoalSteps / SPONSOR_GIFT_STEP_INTERVAL)
+      const nextUnlockedGifts = Array.from({ length: giftsToUnlock }, (_, index) => {
+        const giftIndex = unlockedGifts.length + index
+        const gift = sponsorGifts[giftIndex % sponsorGifts.length]
+        const expiresAt = new Date(now)
+        expiresAt.setDate(expiresAt.getDate() + SPONSOR_GIFT_VALIDITY_DAYS)
+        return {
+          id: giftIndex,
+          ...gift,
+          redemptionCode: `KIN-GIFT-${String(giftIndex + 1).padStart(4, '0')}`,
+          expiresAt: expiresAt.toISOString(),
+          redeemedAt: null,
+        }
+      })
+      const remainingSteps = completedGoalSteps % SPONSOR_GIFT_STEP_INTERVAL
+      setUnlockedGifts((gifts) => [...gifts, ...nextUnlockedGifts])
+      setPendingCarrySteps(remainingSteps)
+      setGoalCompletion({ gifts: nextUnlockedGifts, remainingSteps })
       setLifetimeSteps((value) => value + routeSteps + rewardSteps)
       setSteps(0)
       setGoalSteps(0)
@@ -295,12 +348,21 @@ function App() {
   }
 
   function chooseNextGoal(nextGoal) {
-    setGoal(nextGoal)
+    setGoalValue(nextGoal)
     setStreak(0)
+    setLastStreakTripAt(null)
     setSteps(0)
-    setGoalSteps(0)
+    setGoalSteps(pendingCarrySteps)
+    setPendingCarrySteps(0)
     setModal('')
-    showToast(`Your ${nextGoal}-day goal is ready. Start fresh.`)
+    showToast(`Your ${nextGoal}-day goal is ready with ${goalCompletion?.remainingSteps.toLocaleString() || '0'} carried steps.`)
+  }
+
+  function markGiftRedeemed(giftId) {
+    setUnlockedGifts((gifts) => gifts.map((gift) => gift.id === giftId && !gift.redeemedAt
+      ? { ...gift, redeemedAt: new Date().toISOString() }
+      : gift))
+    showToast('Gift marked as collected in-store.')
   }
 
   function submitFreeze() {
@@ -430,7 +492,7 @@ function App() {
         <p className="nav-caption">YOUR SPACE</p>
         <nav className="side-nav" aria-label="Main navigation">
           {navItems.map(({ id, label, icon: Icon, badge }) => (
-            <button type="button" key={id} className={`nav-link ${activeTab === id ? 'active' : ''}`} onClick={() => chooseTab(id)}>
+            <button type="button" key={id} className={`nav-link ${id === 'home' ? 'home-nav' : ''} ${activeTab === id ? 'active' : ''}`} onClick={() => chooseTab(id)}>
               <Icon size={18} strokeWidth={1.8} /><span>{label}</span>{badge && <span className="nav-badge">{badge}</span>}
             </button>
           ))}
@@ -450,6 +512,8 @@ function App() {
           <div className="topbar-actions"><span className="weather-pill"><Sun size={15} /> 23° <i>Sunny in Athens</i></span><button type="button" className="icon-button messages-shortcut" aria-label="Messages and matches, 2 unread" title="Messages and matches" onClick={() => chooseTab('messages')}><MessageCircle size={18} /><span className="message-count">2</span></button></div>
         </header>
 
+        {activeTab === 'routes' && <div className="route-mode-toggle"><span><RefreshCw size={17} /><span><strong>Circular route</strong><small>Return to your starting point</small></span></span><button type="button" role="switch" aria-checked={returnEnabled} className={`return-switch ${returnEnabled ? 'on' : ''}`} onClick={() => setReturnEnabled((value) => !value)} aria-label="Circular route"><span /></button></div>}
+
         {socialLocked && <section className="subpage age-gate-page"><div className="age-gate-panel"><div className="age-gate-icon"><ShieldCheck size={24} /></div><p className="eyebrow">A SAFER COMMUNITY</p><h1>Verify your age to <em>meet walkers.</em></h1><p className="age-gate-intro">Discover, likes, matches, and chats are for adults 18 and over. Attach an official document to verify your age and unlock these features.</p>{ageAccess === 'underage' ? <div className="age-denied"><ShieldCheck size={19} /><span><strong>Social features are unavailable.</strong><small>{ageVerificationMessage}</small></span></div> : <form className="age-verification-form" onSubmit={verifyAge}><label>Date of birth<input type="date" value={birthDate} onChange={(event) => { setBirthDate(event.target.value); setAgeVerificationMessage('') }} required /></label><label>Official age document <span className="optional-label">(government ID, passport, or other proof of age)</span><input type="file" accept="image/*,.pdf,application/pdf" onChange={(event) => { setAgeDocumentName(event.target.files?.[0]?.name || ''); setAgeVerificationMessage('') }} required /></label>{ageDocumentName && <span className="age-file-ready"><Check size={14} /> {ageDocumentName}</span>}{ageVerificationMessage && <p className="age-verification-message">{ageVerificationMessage}</p>}<p className="age-demo-note">Prototype only: document review is simulated. A production app must verify documents securely, protect them, and delete them when no longer needed.</p><button type="submit" className="primary-button age-submit-button"><ShieldCheck size={16} /> Verify age</button></form>}</div></section>}
 
         {activeTab === 'home' && <>
@@ -457,7 +521,7 @@ function App() {
             <section className="route-panel panel">
               <div className="step-target-control">
                 <div className="step-target-heading"><label htmlFor="daily-step-goal"><Zap size={15} /> Today’s step goal</label><div className="step-target-input"><button type="button" aria-label="Decrease step goal" onClick={() => setTargetSteps((value) => Math.max(2000, value - 500))}><Minus size={16} /></button><input id="daily-step-goal" type="number" min="2000" step="500" value={targetSteps} onChange={(event) => setTargetSteps(Math.max(2000, Number(event.target.value) || 2000))} /><button type="button" aria-label="Increase step goal" onClick={() => setTargetSteps((value) => value + 500)}><Plus size={16} /></button><span>steps</span></div></div>
-                <div className="return-control"><span><strong>Return to start</strong><small>{returnEnabled ? `${outboundSteps.toLocaleString()} out · ${returnSteps.toLocaleString()} back` : `${targetSteps.toLocaleString()} steps one way`}</small></span><button type="button" role="switch" aria-checked={returnEnabled} className={`return-switch ${returnEnabled ? 'on' : ''}`} onClick={() => setReturnEnabled((value) => !value)} aria-label="Return to start"><span /></button></div>
+                <div className="return-control"><span><strong>Circular route</strong><small>{returnEnabled ? `${outboundSteps.toLocaleString()} out · ${returnSteps.toLocaleString()} back` : `${targetSteps.toLocaleString()} steps one way`}</small></span><button type="button" role="switch" aria-checked={returnEnabled} className={`return-switch ${returnEnabled ? 'on' : ''}`} onClick={() => setReturnEnabled((value) => !value)} aria-label="Circular route"><span /></button></div>
                 <small className="step-target-help">Minimum 2,000 steps · route updates to the closest match</small>
               </div>
               <div className="panel-heading route-heading"><div><div className="section-label"><span className="section-marker" /> TODAY’S LITTLE ADVENTURE</div><h2>{currentRoute.name}</h2><p className="route-area"><MapPin size={13} /> {currentRoute.area}</p></div><button className="text-button" type="button" onClick={() => chooseTab('routes')}>Change route <ChevronRight size={15} /></button></div>
@@ -595,6 +659,21 @@ function App() {
 
         {activeTab === 'rewards' && <section className="subpage extra-rewards-page"><div className="offers-title"><div><p className="eyebrow">MORE WAYS TO CELEBRATE</p><h2>Perks for your bigger goals.</h2></div><span className="reward-count-label">{extraRewards.length} PARTNER GIFTS</span></div><div className="reward-offer-list">{extraRewards.map((reward) => <article className="reward-offer" key={`${reward.brand}-${reward.offer}`}><div className="reward-offer-thumb"><img src={`https://images.unsplash.com/${reward.image}?auto=format&fit=crop&w=240&h=180&q=80`} alt="" /></div><div className="reward-offer-copy"><span className="offer-category">{reward.category} · {reward.brand.toUpperCase()}</span><strong>{reward.offer}</strong><small>{reward.note}</small></div><span className="offer-status status-locked">{reward.milestone}-DAY GOAL</span></article>)}</div><p className="extra-rewards-note"><ShieldCheck size={14} /> Partner gifts vary. Available rewards can be collected in-store after completing the listed streak goal.</p></section>}
 
+        {activeTab === 'rewards' && <section className="subpage sponsor-gifts-section"><div className="offers-title"><div><p className="eyebrow">SPONSOR MILESTONES</p><h2>Gifts you’ve won.</h2></div><span className="reward-count-label">{unlockedGifts.length} GIFTS WON</span></div><div className="sponsor-milestone-panel"><div><span className="section-label"><span className="section-marker" /> NEXT GIFT · {nextSponsorGift.name.toUpperCase()}</span><p><strong>{stepsUntilNextGift.toLocaleString()}</strong> more goal steps unlock your next sponsor gift.</p></div><div className="progress-track"><span style={{ width: `${Math.round((stepsTowardNextGift / SPONSOR_GIFT_STEP_INTERVAL) * 100)}%` }} /></div></div>{unlockedGifts.length > 0 ? <div className="unlocked-gift-list">{unlockedGifts.map((gift) => {
+          const redeemed = Boolean(gift.redeemedAt)
+          return <article className={`unlocked-gift ${redeemed ? 'unlocked-gift-redeemed' : ''}`} key={gift.id}>
+            <span className="reward-star"><Gift size={15} /></span>
+            <div className="unlocked-gift-copy">
+              <span><strong>{gift.name}</strong><small>{gift.sponsor}</small></span>
+              <div className="gift-claim-details">
+                <span><small>REDEMPTION CODE</small><code>{gift.redemptionCode}</code></span>
+                <span><small>EXPIRES</small><time dateTime={gift.expiresAt}>{formatGiftExpiration(gift.expiresAt)}</time></span>
+              </div>
+            </div>
+            <button type="button" className="gift-redeem-button" aria-label={`${redeemed ? 'Collected' : 'Mark collected'}: ${gift.name}`} disabled={redeemed} onClick={() => markGiftRedeemed(gift.id)}>{redeemed ? <><Check size={14} /> Collected</> : 'Mark collected'}</button>
+          </article>
+        })}</div> : <p className="extra-rewards-note"><ShieldCheck size={14} /> Gifts you unlock stay yours, even after a new goal begins.</p>}</section>}
+
         {activeTab === 'profile' && (
           <section className="subpage profile-page">
             <div className="subpage-heading">
@@ -636,11 +715,12 @@ function App() {
         <footer className="site-footer"><span>kínesi<span className="wordmark-dot">.</span> <small>Made for the long way home.</small></span><span>ATHENS, GREECE <span>·</span> {currentYear}</span></footer>
       </main>
 
-      <nav className="mobile-nav" aria-label="Mobile navigation">{navItems.filter((item) => item.id !== 'messages').map(({ id, label, icon: Icon }) => <button type="button" key={id} className={activeTab === id ? 'active' : ''} onClick={() => chooseTab(id)}><Icon size={19} /><span>{label}</span></button>)}<button type="button" className={activeTab === 'profile' ? 'active' : ''} onClick={() => chooseTab('profile')}><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64&q=80" alt="" /><span>Profile</span></button></nav>
+      <nav className="mobile-nav" aria-label="Mobile navigation">{navItems.filter((item) => item.id !== 'messages').map(({ id, label, icon: Icon }) => <button type="button" key={id} className={`${id === 'home' ? 'home-nav' : ''} ${activeTab === id ? 'active' : ''}`} onClick={() => chooseTab(id)}><Icon size={19} /><span>{label}</span></button>)}<button type="button" className={activeTab === 'profile' ? 'active' : ''} onClick={() => chooseTab('profile')}><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=64&h=64&q=80" alt="" /><span>Profile</span></button></nav>
 
-      {modal && <div className="modal-backdrop" onClick={() => setModal('')}><section className={`modal-card ${modal === 'reward' ? 'reward-modal' : ''} ${modal === 'failed' ? 'failed-modal' : ''}`} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
-        <button type="button" className="modal-close" aria-label="Close dialog" onClick={() => setModal('')}><X size={18} /></button>
-        {modal === 'streak' && <><div className="modal-icon streak-modal-icon"><Flame size={21} fill="currentColor" /></div><p className="eyebrow">YOUR WALKING RHYTHM</p><h2>{streak} day streak</h2><p className="modal-description">Your current goal is set to <strong>{goal} days</strong>. Keep going to unlock your bonus.</p><div className="streak-modal-progress"><div className="progress-caption"><span>DAY {streak} OF {goal}</span><strong>{goal - streak} TO GO</strong></div><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><div className="streak-modal-reward"><Star size={15} fill="currentColor" /> +{rewardSteps.toLocaleString()} bonus steps</div></div><button type="button" className="primary-button modal-submit" onClick={() => { setFreezeReason(''); setFreezeMessage(''); setModal('freeze') }}><Pause size={15} /> Freeze this streak</button></>}
+      {modal && <div className="modal-backdrop" onClick={closeModal}><section className={`modal-card ${modal === 'reward' ? 'reward-modal' : ''} ${modal === 'failed' ? 'failed-modal' : ''}`} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>
+        <button type="button" className="modal-close" aria-label="Close dialog" onClick={closeModal}><X size={18} /></button>
+        {modal === 'streak' && <><div className="modal-icon streak-modal-icon"><Flame size={21} fill="currentColor" /></div><p className="eyebrow">YOUR WALKING RHYTHM</p><h2>{streak} day streak</h2><p className="modal-description">Your current goal is set to <strong>{goal} days</strong>. Keep going to unlock your bonus.</p><div className="streak-modal-progress"><div className="progress-caption"><span>DAY {streak} OF {goal}</span><strong>{goal - streak} TO GO</strong></div><div className="progress-track"><span style={{ width: `${progress}%` }} /></div><div className="streak-modal-reward"><Star size={15} fill="currentColor" /> +{rewardSteps.toLocaleString()} bonus steps</div></div><button type="button" className="primary-button modal-submit" onClick={() => { setFreezeReason(''); setFreezeMessage(''); setModal('freeze') }}><Pause size={15} /> Freeze this streak</button><button type="button" className="text-button modal-later" onClick={() => setModal('confirm-failure')}>End this goal</button></>}
+        {modal === 'confirm-failure' && <><div className="modal-icon failed-modal-icon"><RefreshCw size={20} /></div><p className="eyebrow">END YOUR CURRENT CHALLENGE</p><h2>Are you sure?</h2><p className="modal-description">Ending this goal resets its progress. You won’t receive the goal bonus, and no remaining steps will carry into your next goal. Gifts you already unlocked stay secured.</p><div className="stop-route-actions"><button type="button" className="secondary-button" onClick={() => setModal('streak')}>Keep my goal</button><button type="button" className="stop-route-confirm" onClick={failGoal}>End goal</button></div></>}
         {modal === 'stop-route' && <><div className="modal-icon stop-route-icon"><Frown size={22} /></div><p className="eyebrow">ROUTE IN PROGRESS</p><h2>Are you sure you want to stop your route?</h2><p className="modal-description">Your {routeProgressSteps.toLocaleString()} route steps won’t count toward your total, and your streak won’t advance.</p><div className="stop-route-actions"><button type="button" className="secondary-button" onClick={() => setModal('')}>No, keep walking</button><button type="button" className="stop-route-confirm" onClick={confirmStopRoute}>Yes, stop route</button></div></>}
         {modal === 'route-complete' && <div className="route-complete-content"><div className="fireworks-scene"><Sparkles size={25} /><PartyPopper size={32} /><Sparkles size={18} /></div><p className="eyebrow">YOU MADE IT</p><h2>Beautifully done!</h2><p className="modal-description">You completed your {targetSteps.toLocaleString()}-step route. Your steps have been added to your goal.</p><div className="route-complete-stats"><span><Flame size={16} /> {streak} day streak</span><span><Zap size={16} /> {goalSteps.toLocaleString()} goal steps</span></div><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Keep going</button></div>}
         {modal === 'lucky-offer' && currentRoute.luckyOffer && <><div className="modal-icon lucky-modal-icon"><Sparkles size={20} /></div><p className="eyebrow">LUCKY ROUTE · {currentRoute.stop.toUpperCase()}</p><h2>{currentRoute.luckyOffer.prize}</h2><p className="modal-description">You’re about {currentRoute.luckyOffer.meters} meters from the store. Show this sponsor-funded code to the cashier.</p><div className="lucky-code-card"><small>YOUR REDEMPTION CODE</small><strong>{currentRoute.luckyOffer.code}</strong></div><p className="lucky-odds-note">{currentRoute.luckyOffer.chance}. One offer per eligible route; prizes may vary.</p><button type="button" className="primary-button modal-submit" onClick={() => { setLuckyRedeemed(true); setModal('') }}><Check size={15} /> Mark as redeemed</button></>}
@@ -648,8 +728,8 @@ function App() {
         {modal === 'freeze' && <><div className="modal-icon pause-modal-icon"><Pause size={20} /></div><p className="eyebrow">A DAY OFF IS PART OF THE PLAN</p><h2>Pause your streak.</h2><p className="modal-description">Life happens. Choose what’s up and we’ll keep your streak right where it is.</p><div className="freeze-options">{['Illness or injury', 'Rest day', 'I don’t have time', 'Bad weather'].map((reason) => <button type="button" key={reason} className={freezeReason === reason ? 'selected' : ''} onClick={() => { setFreezeReason(reason); setFreezeMessage('') }}><span className={`reason-dot ${freezeReason === reason ? 'checked' : ''}`}>{freezeReason === reason && <Check size={11} />}</span><span>{reason}</span>{reason === 'Bad weather' ? <small>Unlimited · forecast checked</small> : <small>{freezePasses[reason]} of 3 left</small>}</button>)}</div>{freezeMessage && <p className={`freeze-feedback ${freezeReason === 'Bad weather' ? 'freeze-error' : ''}`}>{freezeMessage}</p>}<button type="button" className="primary-button modal-submit" onClick={submitFreeze}><Pause size={15} /> Freeze today</button><p className="modal-footnote"><Sun size={13} /> Bad weather is checked against your local forecast.</p></>}
         {modal === 'schedule' && <>{scheduleSent ? <><div className="modal-icon success-modal-icon"><Check size={21} /></div><p className="eyebrow">SOMETHING TO LOOK FORWARD TO</p><h2>Walk invite sent.</h2><p className="modal-description">We’ll let your match know and message you when they reply.</p><button type="button" className="primary-button modal-submit" onClick={() => setModal('')}>Lovely <Check size={15} /></button></> : <><div className="modal-icon schedule-modal-icon"><CalendarDays size={20} /></div><p className="eyebrow">MAKE A LITTLE PLAN</p><h2>Schedule a walk.</h2><p className="modal-description">Pick a time and we’ll find a lovely route for the two of you.</p><div className="schedule-form"><label>DAY<input type="date" defaultValue="2026-05-20" /></label><label>TIME<input type="time" defaultValue="10:30" /></label><label>YOUR WALK<select defaultValue="3200"><option value="3200">Around 3,200 steps · 2.4 km</option><option value="5100">Around 5,100 steps · 3.8 km</option><option value="7000">Around 7,000 steps · 5.2 km</option></select></label></div><div className="meeting-note"><MapPin size={16} /><span><strong>We’ll pick a meeting point</strong><small>Somewhere easy to find, near both of you.</small></span></div><button type="button" className="primary-button modal-submit" onClick={() => setScheduleSent(true)}><CalendarDays size={15} /> Send walk invite</button></>}</>}
         {modal === 'match' && <><div className="match-spark">✳</div><p className="eyebrow">A LITTLE ATHENS MAGIC</p><h2>Well, hello <em>{matchedPerson.name}.</em></h2><p className="modal-description">You both want the long way home. Say hello, or make a plan for a walk.</p><div className="match-avatars"><img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=120&h=120&q=80" alt="Elena" /><Heart size={19} fill="currentColor" /><img src={`https://images.unsplash.com/${matchedPerson.image}?auto=format&fit=crop&w=120&h=120&q=80`} alt={matchedPerson.name} /></div><button type="button" className="primary-button modal-submit" onClick={() => { setModal('schedule'); setScheduleSent(false) }}><CalendarDays size={15} /> Schedule a walk</button><button type="button" className="text-button match-dismiss" onClick={() => { setModal(''); chooseTab('messages') }}><MessageCircle size={15} /> Say hello in messages</button></>}
-        {modal === 'reward' && <><div className="fireworks-scene reward-fireworks" aria-hidden="true"><Sparkles size={25} /><PartyPopper size={32} /><Sparkles size={18} /></div><p className="eyebrow">YOU SHOWED UP FOR YOU</p><h2>{goal} days, <em>beautifully done.</em></h2><p className="modal-description">Your streak steps reset and your bonus has been added. Choose a goal for your next streak.</p><div className="bonus-stamp"><Sparkles size={20} /><strong>+{rewardSteps.toLocaleString()}</strong><span>BONUS STEPS</span></div><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => { setModal(''); chooseTab('rewards') }}>Choose later <ArrowUpRight size={14} /></button></>}
-        {modal === 'failed' && <><div className="modal-icon failed-modal-icon"><RefreshCw size={20} /></div><p className="eyebrow">A FRESH START IS STILL A START</p><h2>Your streak ended.</h2><p className="modal-description">Your steps have reset, and there’s no reward this time. Choose a new goal and begin again whenever you’re ready.</p><p className="next-goal-label">CHOOSE YOUR NEXT GOAL</p><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => setModal('')}>Maybe later</button></>}
+        {modal === 'reward' && <><div className="fireworks-scene reward-fireworks" aria-hidden="true"><Sparkles size={25} /><PartyPopper size={32} /><Sparkles size={18} /></div><p className="eyebrow">YOU SHOWED UP FOR YOU</p><h2>{goal} days, <em>beautifully done.</em></h2><p className="modal-description">Congratulations! You’ve successfully completed your goal! As a reward, you’ve unlocked the following gifts: {goalCompletion?.gifts.map((gift) => gift.name).join(', ') || 'No new gifts'}. Additionally, {goalCompletion?.remainingSteps.toLocaleString() || '0'} remaining steps will be transferred to your next goal.</p>{goalCompletion?.gifts.map((gift) => <p className="gift-unlock-message" key={gift.id}>Congratulations! You’ve unlocked a new gift: {gift.name}. Enjoy your reward!</p>)}<p className="modal-footnote">Start a new goal now to keep these remaining steps. If you leave without starting one, they’ll be lost.</p><div className="bonus-stamp"><Sparkles size={20} /><strong>+{rewardSteps.toLocaleString()}</strong><span>BONUS STEPS</span></div><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={() => { closeModal(); chooseTab('rewards') }}>Choose later <ArrowUpRight size={14} /></button></>}
+        {modal === 'failed' && <><div className="modal-icon failed-modal-icon"><RefreshCw size={20} /></div><p className="eyebrow">A FRESH START IS STILL A START</p><h2>Your streak ended.</h2><p className="modal-description">Unfortunately, you didn’t reach your goal this time. Don’t give up! Try again with your next challenge!</p><p className="next-goal-label">CHOOSE YOUR NEXT GOAL</p><GoalPicker onChoose={chooseNextGoal} /><button type="button" className="text-button modal-later" onClick={closeModal}>Maybe later</button></>}
       </section></div>}
       {toast && <div className="toast-message"><Check size={16} /> {toast}</div>}
     </div>
